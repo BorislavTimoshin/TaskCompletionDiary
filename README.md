@@ -4,5 +4,5 @@
 просматривать свои достижения в динамике.
 
 **Установка зависимостей для работы проекта:**\
-pip install -r requirements.txt
+pip install -r requirements.txt\
 pip freeze > requirements.txt

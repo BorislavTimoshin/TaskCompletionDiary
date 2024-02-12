@@ -4,10 +4,10 @@ from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QRadioButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Py_files.main_buttons import CreateTask, AddEntry, AboutProgram
+from Py_files.main_buttons import CreateTask, AddEntry, AboutProgram, get_number_of_records_for_plotting
 from Py_files.warnings_dialog_window import warning_dialog_window
+from Py_files.chart import Chart
 from Py_files.database import db
-import matplotlib.pyplot as plt
 import pandas as pd
 import csv
 import os
@@ -30,8 +30,9 @@ class MainWindow(QMainWindow):
         self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
 
         self.download_chart_action.triggered.connect(self.download_chart)
-        self.program_version_action.triggered.connect(self.about_program_dialog)
         self.download_table_action.triggered.connect(self.download_table)
+        self.show_chart_action.triggered.connect(self.show_chart)
+        self.program_version_action.triggered.connect(self.about_program_dialog)
 
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu("Файл")
@@ -72,33 +73,34 @@ class MainWindow(QMainWindow):
 
         self.plotting_option_1 = QRadioButton("Первые 30 записей", self)
         self.plotting_option_1.setGeometry(20, 520, 141, 21)
+        self.plotting_option_1.setChecked(True)
 
-        self.radioButton_option_2 = QRadioButton("Первые 60 записей", self)
-        self.radioButton_option_2.setGeometry(20, 550, 151, 21)
+        self.plotting_option_2 = QRadioButton("Первые 60 записей", self)
+        self.plotting_option_2.setGeometry(20, 550, 151, 21)
 
-        self.radioButton_option_3 = QRadioButton("Первые 90 записей", self)
-        self.radioButton_option_3.setGeometry(20, 580, 141, 21)
+        self.plotting_option_3 = QRadioButton("Первые 90 записей", self)
+        self.plotting_option_3.setGeometry(20, 580, 141, 21)
 
-        self.radioButton_option_4 = QRadioButton("Первые 120 записей", self)
-        self.radioButton_option_4.setGeometry(20, 610, 151, 21)
+        self.plotting_option_4 = QRadioButton("Первые 120 записей", self)
+        self.plotting_option_4.setGeometry(20, 610, 151, 21)
 
-        self.radioButton_option_5 = QRadioButton("Первые 150 записей", self)
-        self.radioButton_option_5.setGeometry(20, 640, 151, 21)
+        self.plotting_option_5 = QRadioButton("Первые 150 записей", self)
+        self.plotting_option_5.setGeometry(20, 640, 151, 21)
 
-        self.radioButton_6 = QRadioButton("Первые 180 записей", self)
-        self.radioButton_6.setGeometry(210, 520, 151, 21)
+        self.plotting_option_6 = QRadioButton("Первые 180 записей", self)
+        self.plotting_option_6.setGeometry(210, 520, 151, 21)
 
-        self.radioButton_7 = QRadioButton("Первые 270 записей", self)
-        self.radioButton_7.setGeometry(210, 550, 151, 21)
+        self.plotting_option_7 = QRadioButton("Первые 270 записей", self)
+        self.plotting_option_7.setGeometry(210, 550, 151, 21)
 
-        self.radioButton_8 = QRadioButton("Первые 365 записей", self)
-        self.radioButton_8.setGeometry(210, 580, 151, 21)
+        self.plotting_option_8 = QRadioButton("Первые 365 записей", self)
+        self.plotting_option_8.setGeometry(210, 580, 151, 21)
 
-        self.radioButton_9 = QRadioButton("Первые 730 записей", self)
-        self.radioButton_9.setGeometry(210, 610, 151, 21)
+        self.plotting_option_9 = QRadioButton("Первые 730 записей", self)
+        self.plotting_option_9.setGeometry(210, 610, 151, 21)
 
-        self.radioButton_10 = QRadioButton("Все записи", self)
-        self.radioButton_10.setGeometry(210, 640, 101, 21)
+        self.plotting_option_10 = QRadioButton("Все записи", self)
+        self.plotting_option_10.setGeometry(210, 640, 101, 21)
 
         task_names = db.get_task_names(self.id_person)
         result_names = db.get_result_names(self.id_person)
@@ -159,25 +161,33 @@ class MainWindow(QMainWindow):
         self.btn_delete_task.setGeometry(450, 410, 291, 28)
         self.btn_delete_task.clicked.connect(self.delete_task)
 
-    def download_chart(self):
+    def download_chart(self, is_show=False):
         task = self.btn_open_task.currentText()
         task_names = db.get_task_names(self.id_person)
         index_task = task_names.index(task)
         measurements = db.get_measurements(self.id_person)
         measurement = measurements[index_task]
-        if measurement in ["Число", "Время"]:
-            label_result = "Результат"
-        else:
-            label_result = f"Результат ({measurement})"
         results = db.get_results(self.id_person)[index_task]
         dates = db.get_dates(self.id_person)[index_task]
+        if measurement == "Число":
+            label_result = "Результат"
+        elif measurement == "Время":
+            results = list(map(lambda x: x.hour * 3600 + x.minute * 60 + x.second, results))
+            label_result = "Результат (с)"
+        else:
+            label_result = f"Результат ({measurement})"
+        number_of_records_for_plotting = get_number_of_records_for_plotting(self)
         values = pd.Series(results, index=dates)
-        plt.figure(figsize=(10, 6))
-        plt.plot(values.index, values.values)
-        plt.title('График результатов')
-        plt.xlabel('Дата')
-        plt.ylabel(label_result)
-        plt.show()
+        if number_of_records_for_plotting != "all_records":
+            values = pd.Series(results, index=dates)[:number_of_records_for_plotting]
+        chart = Chart(self, values, label_result)
+        if is_show:
+            chart.show()
+            return
+        chart.download_chart()
+
+    def show_chart(self):
+        self.download_chart(is_show=True)
 
     def download_table(self):
         file_path, file_type = QFileDialog.getSaveFileName(
@@ -273,6 +283,16 @@ class MainWindow(QMainWindow):
         self.result_value.setText(result_name)
         self.table.setHorizontalHeaderItem(1, self.result_value)
         self.fill_table(task)
+        self.plotting_option_1.setChecked(True)
+        self.plotting_option_2.setChecked(False)
+        self.plotting_option_3.setChecked(False)
+        self.plotting_option_4.setChecked(False)
+        self.plotting_option_5.setChecked(False)
+        self.plotting_option_6.setChecked(False)
+        self.plotting_option_7.setChecked(False)
+        self.plotting_option_8.setChecked(False)
+        self.plotting_option_9.setChecked(False)
+        self.plotting_option_10.setChecked(False)
 
     def delete_entry(self):
         number_entry = self.delete_row_of_entry.text()

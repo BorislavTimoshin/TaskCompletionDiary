@@ -40,15 +40,6 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def len_comment_more_45():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Длина комментария не может быть больше 45 символов")
-        msg.setWindowTitle("Ошибка в написании комментария")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
     def row_not_exists():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)

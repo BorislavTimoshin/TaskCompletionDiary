@@ -140,8 +140,7 @@ class AddEntry(QDialog):
         self.mark.setGeometry(10, 130, 261, 31)
 
         self.title_comment = QLabel("<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
-                                    "Напишите комментарий к результату (По желанию). "
-                                    "До 45 символов</span></p></body></html>", self)
+                                    "Напишите комментарий к результату (По желанию)</span></p></body></html>", self)
         self.title_comment.setGeometry(10, 180, 641, 31)
 
         self.comment = QLineEdit(self)
@@ -260,12 +259,9 @@ class AddEntry(QDialog):
         date = self.get_date()
         mark = self.mark.currentText()
         comment = self.comment.text()
-        if len(comment) <= 45:
-            if result and mark and date:
-                self.insert_in_db(result, date, mark, comment)
-                self.close()
-        else:
-            warning_dialog_window.len_comment_more_45()
+        if result and mark and date:
+            self.insert_in_db(result, date, mark, comment)
+            self.close()
 
 
 # Класс для открытия диалогового окна: о программе
@@ -293,3 +289,25 @@ class AboutProgram(QDialog):
         self.textEdit = QPlainTextEdit(text, self)
         self.textEdit.setGeometry(230, 40, 351, 301)
         self.textEdit.setReadOnly(True)
+
+
+def get_number_of_records_for_plotting(parent):
+    if parent.plotting_option_1.isChecked():
+        return 30
+    if parent.plotting_option_2.isChecked():
+        return 60
+    if parent.plotting_option_3.isChecked():
+        return 90
+    if parent.plotting_option_4.isChecked():
+        return 120
+    if parent.plotting_option_5.isChecked():
+        return 150
+    if parent.plotting_option_6.isChecked():
+        return 180
+    if parent.plotting_option_7.isChecked():
+        return 270
+    if parent.plotting_option_8.isChecked():
+        return 365
+    if parent.plotting_option_9.isChecked():
+        return 730
+    return "all_records"

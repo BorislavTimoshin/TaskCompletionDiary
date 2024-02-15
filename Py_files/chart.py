@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QFileDialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.dates as mdates
+from math import ceil
 
 
 class Chart(QMainWindow):
@@ -30,10 +31,9 @@ class Chart(QMainWindow):
         ax.plot(
             self.values.index,
             self.values.values,
-            marker='o',
             color='blue',
             linestyle='--',
-            linewidth=2
+            linewidth=2,
         )
         ax.set(
             xlabel="Дата",
@@ -42,7 +42,7 @@ class Chart(QMainWindow):
         )
         ax.grid()
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%y'))
-        plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=ceil(len(self.values) / 10)))
         plt.gcf().autofmt_xdate()
         self.canvas.draw()
 

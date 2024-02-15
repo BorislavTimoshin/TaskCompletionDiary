@@ -1,3 +1,4 @@
+import sys
 from PyQt5.QtWidgets import QMainWindow, QLineEdit, QPushButton, QLabel
 from PyQt5.QtGui import QPixmap
 from Py_files.database import db
@@ -11,7 +12,7 @@ class Authorization(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(600, 200, 700, 400)
+        self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Авторизация")
 
         self.pixmap_authorization = QPixmap("Images/authorization.gif")
@@ -33,7 +34,7 @@ class Authorization(QMainWindow):
         self.text_about_authorization.setGeometry(330, 170, 351, 21)
 
         self.btn_login = QPushButton("Войти", self)
-        self.btn_login.setGeometry(330, 200, 131, 28)
+        self.btn_login.setGeometry(330, 210, 181, 28)
         self.btn_login.setStyleSheet(
             "QPushButton""{"
             "background-color : lightblue;"
@@ -42,13 +43,22 @@ class Authorization(QMainWindow):
         self.btn_login.clicked.connect(self.open_login_window)
 
         self.btn_registration = QPushButton("Регистрация", self)
-        self.btn_registration.setGeometry(470, 200, 131, 28)
+        self.btn_registration.setGeometry(330, 260, 181, 28)
         self.btn_registration.setStyleSheet(
             "QPushButton""{"
             "background-color : lightblue;"
             "}"
         )
         self.btn_registration.clicked.connect(self.open_registration_window)
+
+        self.btn_exit = QPushButton("Закрыть", self)
+        self.btn_exit.setGeometry(50, 415, 161, 31)
+        self.btn_exit.clicked.connect(self.btn_exit_from_program)
+        self.btn_exit.setStyleSheet(
+            "QPushButton""{"
+            "background-color : lightblue;"
+            "}"
+        )
 
     def open_login_window(self):
         self.close()
@@ -59,6 +69,10 @@ class Authorization(QMainWindow):
         self.close()
         self.registration = Registration()
         self.registration.show()
+
+    @staticmethod
+    def btn_exit_from_program():
+        sys.exit()
 
 
 # Класс для работы с окном: вход пользователя в аккаунт

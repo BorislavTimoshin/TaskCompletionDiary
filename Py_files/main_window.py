@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
         values = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":
-            values = pd.Series(results, index=dates)[:number_of_records_for_plotting]
+            values = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
         chart = Chart(self, values, label_result)
         if is_show:
             chart.show()

@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
             csv_file = pd.read_csv(csv_path)
             excel_file = pd.ExcelWriter(file_path)
             csv_file.to_excel(excel_file, index=False)
-            excel_file.save()
+            excel_file._save()
             os.remove(csv_path)
 
     def about_program_dialog(self):

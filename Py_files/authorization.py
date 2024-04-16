@@ -154,7 +154,7 @@ class Login(QMainWindow):
     def open_main_window(self, username):
         self.close()
         self.id_person = db.get_id_person(username)
-        self.ex = MainWindow(self.id_person)
+        self.ex = MainWindow(self.id_person, dad=Authorization)
         self.ex.show()
 
 
@@ -236,7 +236,7 @@ class Registration(QMainWindow):
 
     def open_main_window(self, username, password):
         self.id_person = db.get_id_person(username)
-        self.ex = MainWindow(self.id_person)
+        self.ex = MainWindow(self.id_person, dad=Authorization)
         self.ex.create_new_task(
             is_login_account=True,
             ex_main_window=self.ex,

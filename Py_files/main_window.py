@@ -15,9 +15,10 @@ import os
 
 # Класс с главным окном для работы с аккаунтом пользователя
 class MainWindow(QMainWindow):
-    def __init__(self, id_person):
+    def __init__(self, id_person, dad=None):
         super().__init__()
         self.id_person = id_person
+        self.dad = dad
         self.initUI()
 
     def initUI(self):
@@ -160,6 +161,11 @@ class MainWindow(QMainWindow):
         self.btn_delete_task = QPushButton("Удалить задачу", self)
         self.btn_delete_task.setGeometry(450, 410, 291, 28)
         self.btn_delete_task.clicked.connect(self.delete_task)
+
+        self.exit_to_authorization = QPushButton("Выход", self)
+        self.exit_to_authorization.setGeometry(450, 620, 291, 48)
+        self.exit_to_authorization.clicked.connect(self.back_window_authorization)
+        self.exit_to_authorization.setStyleSheet(light_blue_color)
 
     def download_chart(self, is_show=False):
         task = self.btn_open_task.currentText()
@@ -375,3 +381,8 @@ class MainWindow(QMainWindow):
 
         else:
             warning_dialog_window.last_task_cannot_be_deleted()
+
+    def back_window_authorization(self):
+        self.close()
+        self.authorization = self.dad()
+        self.authorization.show()

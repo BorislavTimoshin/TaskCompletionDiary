@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget, QCalendarWidget, QTableWidgetItem
 from PyQt5.QtWidgets import QVBoxLayout, QFormLayout, QPlainTextEdit
 from PyQt5.QtGui import QPixmap
 from datetime import datetime, time
-from Py_files.warnings_dialog_window import warning_dialog_window
+from Py_files.warnings import warning_dialog_window
 from Py_files.database import db
 
 

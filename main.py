@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QLineEdit, QFileDialog, QRadioButton, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from Py_files.main_buttons import CreateTask, AddEntry, AboutProgram, get_number_of_records_for_plotting
-from Py_files.warnings_dialog_window import warning_dialog_window
+from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
 from Py_files.chart import Chart
 from Py_files.database import db

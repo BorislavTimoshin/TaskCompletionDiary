@@ -1,13 +1,17 @@
 from PyQt5.QtWidgets import QMessageBox
 
 
+# Не обработана ошибка, если данных в таблице нет и человек хочет построить график, то программа падает
+# Было бы прикольно добавить срез данных, допустим, за предыдущие 7 дней по всем задачам (посмотреть текущую форму спортсмена)
+
+
 # Класс для вывода диалоговых окон с предупреждениями
 class WarningDialogWindow:
     @staticmethod
-    def len_task_more_20():
+    def len_task_more_30():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Длина названия задачи должна быть не более 20 символов")
+        msg.setText("Длина названия задачи должна быть не более 30 символов")
         msg.setWindowTitle("Ошибка в названии задачи")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()

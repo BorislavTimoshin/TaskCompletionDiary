@@ -55,7 +55,7 @@ class CreateTask(QDialog):
         result_name = self.name_result.text()
         measurement = self.unit_of_measurement.currentText()
         if task_name and result_name:
-            if len(task_name) <= 20:
+            if len(task_name) <= 30:
                 if len(result_name) <= 15:
                     task_names = db.get_task_names(self.id_person)
                     if task_name in task_names:
@@ -84,7 +84,7 @@ class CreateTask(QDialog):
                 else:
                     warning_dialog_window.len_title_result_more_15()
             else:
-                warning_dialog_window.len_task_more_20()
+                warning_dialog_window.len_task_more_30()
 
     def cancel(self):
         self.reject()

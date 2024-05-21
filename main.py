@@ -182,13 +182,14 @@ class MainWindow(QMainWindow):
         measurement = measurements[index_task]
         results = db.get_results(self.id_person)[index_task]
         dates = db.get_dates(self.id_person)[index_task]
+        result_name = db.get_result_names(self.id_person)[index_task]
         if measurement == "Число":
             label_result = "Результат"
         elif measurement == "Время":
             results = list(map(lambda x: x.hour * 3600 + x.minute * 60 + x.second, results))
             label_result = "Результат (с)"
         else:
-            label_result = f"Результат ({measurement})"
+            label_result = f"{result_name} ({measurement})"
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
         values = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":

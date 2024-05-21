@@ -42,7 +42,7 @@ class CreateTask(QDialog):
 
         self.title_unit_of_measurement = "Единица измерения результата"
         self.unit_of_measurement = QComboBox(self)
-        self.unit_of_measurement.addItems(["Число", "м", "км", "м/с", "км/ч", "Время"])
+        self.unit_of_measurement.addItems(["Число", "кг", "см", "м", "км", "м/с", "км/ч", "Время"])
         form_layout.addRow(self.title_unit_of_measurement, self.unit_of_measurement)
 
         form_layout.addWidget(buttons_new_task)
@@ -213,7 +213,6 @@ class AddEntry(QDialog):
         dates = db.get_dates(self.id_person)
         marks = db.get_marks(self.id_person)
         comments = db.get_comments(self.id_person)
-
         index_task = self.get_index_task()
         index_insert = self.get_index_insertion(date, dates)
 

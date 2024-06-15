@@ -9,6 +9,7 @@ from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
 from Py_files.chart import Chart
 from Py_files.database import db
+from Py_files.colors import *
 import pandas as pd
 import csv
 import os
@@ -21,7 +22,6 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
-# Класс с главным окном для работы с аккаунтом пользователя
 class MainWindow(QMainWindow):
     def __init__(self, id_person):
         super().__init__()
@@ -31,6 +31,12 @@ class MainWindow(QMainWindow):
     def initUI(self):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
+
+        task_names = db.get_task_names(self.id_person)
+        result_names = db.get_result_names(self.id_person)
+        measurements = db.get_measurements(self.id_person)
+
+        # Icons for actions in the application Toolbar
 
         self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
         self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
@@ -42,44 +48,76 @@ class MainWindow(QMainWindow):
         self.show_chart_action.triggered.connect(self.show_chart)
         self.program_version_action.triggered.connect(self.about_program_dialog)
 
-        self.menu = self.menuBar()
-        self.file_menu = self.menu.addMenu("Файл")
-        self.data_menu = self.menu.addMenu("Данные")
-        self.about_program_menu = self.menu.addMenu("О программе")
+        # The application Toolbar
 
-        self.file_menu.addAction(self.download_chart_action)
-        self.file_menu.addAction(self.download_table_action)
-        self.data_menu.addAction(self.show_chart_action)
-        self.about_program_menu.addAction(self.program_version_action)
+        self.menu_bar = self.menuBar()
 
-        self.horizontalLayoutWidget = QWidget(self)
-        self.horizontalLayoutWidget.setGeometry(10, 10, 771, 80)
-        self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.menu_file = self.menu_bar.addMenu("Файл")
+        self.menu_file.addAction(self.download_chart_action)
+        self.menu_file.addAction(self.download_table_action)
 
-        self.btn_create_task = QPushButton("Создать задачу", self.horizontalLayoutWidget)
+        self.menu_data = self.menu_bar.addMenu("Данные")
+        self.menu_data.addAction(self.show_chart_action)
+
+        self.menu_about_program = self.menu_bar.addMenu("О программе")
+        self.menu_about_program.addAction(self.program_version_action)
+
+        # Buttons:
+        # 1) creating a sports task
+        # 2) adding an entry to the table
+
+        self.addingDataWidget = QWidget(self)
+        self.addingDataWidget.setGeometry(10, 10, 771, 80)
+        self.addingDataHLayout = QHBoxLayout(self.addingDataWidget)
+        self.addingDataHLayout.setContentsMargins(0, 0, 0, 0)
+
+        self.btn_create_task = QPushButton("Создать задачу", self)
         self.btn_create_task.setGeometry(160, 40, 131, 31)
-        self.horizontalLayout.addWidget(self.btn_create_task)
-        self.btn_create_task.clicked.connect(self.create_new_task)
-
-        self.btn_new_entry = QPushButton("Добавить запись", self.horizontalLayoutWidget)
-        self.btn_new_entry.setGeometry(310, 40, 131, 31)
-        self.horizontalLayout.addWidget(self.btn_new_entry)
-        self.btn_new_entry.clicked.connect(self.add_entry_to_table)
-
-        light_blue_color = "QPushButton""{""background-color : lightblue;""}"
+        self.btn_create_task.clicked.connect(self.create_task)
         self.btn_create_task.setStyleSheet(light_blue_color)
-        self.btn_new_entry.setStyleSheet(light_blue_color)
+        self.addingDataHLayout.addWidget(self.btn_create_task)
 
-        self.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-                                    "Открыть задачу:</span></p></body></html>", self)
+        self.btn_add_entry = QPushButton("Добавить запись", self)
+        self.btn_add_entry.setGeometry(310, 40, 131, 31)
+        self.btn_add_entry.clicked.connect(self.add_entry_to_table)
+        self.btn_add_entry.setStyleSheet(light_blue_color)
+        self.addingDataHLayout.addWidget(self.btn_add_entry)
+
+        # Opening sport task
+
+        self.lbl_open_task = QLabel(
+            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+            "Открыть задачу:</span></p></body></html>",
+            self
+        )
         self.lbl_open_task.setGeometry(20, 400, 141, 41)
 
-        self.plotting = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-                               "Выберите записи для построения графика:</span></p></body></html>", self)
-        self.plotting.setGeometry(20, 470, 341, 41)
+        self.btn_open_task = QComboBox(self)
+        self.btn_open_task.setGeometry(180, 410, 201, 22)
+        self.btn_open_task.addItems(task_names)
+        self.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.btn_open_task.view().pressed.connect(self.open_task)
 
-        self.plotting_option_1 = QRadioButton("Первые 30 записей", self)
+        current_task = self.btn_open_task.currentText()
+        if current_task:
+            index_current_task = task_names.index(current_task)  # Fixme модифицировать БД
+            result_value = result_names[index_current_task]
+            measurement = measurements[index_current_task]
+            if measurement not in ["Число", "Время"]:
+                result_value = f"{result_value} ({measurement})"
+        else:
+            result_value = ""
+
+        # Plotting chart
+
+        self.lbl_plotting = QLabel(
+            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+            "Выберите записи для построения графика:</span></p></body></html>",
+            self
+        )
+        self.lbl_plotting.setGeometry(20, 470, 341, 41)
+
+        self.plotting_option_1 = QRadioButton("Первые 30 записей", self)  # Fixme модифицировать выбор записей
         self.plotting_option_1.setGeometry(20, 520, 141, 21)
         self.plotting_option_1.setChecked(True)
 
@@ -110,56 +148,41 @@ class MainWindow(QMainWindow):
         self.plotting_option_10 = QRadioButton("Все записи", self)
         self.plotting_option_10.setGeometry(210, 640, 101, 21)
 
-        task_names = db.get_task_names(self.id_person)
-        result_names = db.get_result_names(self.id_person)
-        measurements = db.get_measurements(self.id_person)
+        # Building a table
 
-        self.btn_open_task = QComboBox(self)
-        self.btn_open_task.setGeometry(180, 410, 201, 22)
-        self.btn_open_task.addItems(task_names)
-        self.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.btn_open_task.view().pressed.connect(self.open_task)
-        current_task = self.btn_open_task.currentText()
-        if current_task:
-            index_current_task = task_names.index(current_task)
-            result_value = result_names[index_current_task]
-            measurement = measurements[index_current_task]
-            if measurement not in ["Число", "Время"]:
-                result_value = f"{result_value} ({measurement})"
-        else:
-            result_value = ""
+        self.tableWidget = QTableWidget(self)
+        self.tableWidget.setGeometry(10, 75, 771, 301)
+        self.tableWidget.setColumnCount(4)
+        self.tableWidget.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.tableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget.setColumnWidth(1, 160)
 
-        self.table = QTableWidget(self)
-        self.table.setGeometry(10, 75, 771, 301)
-        self.table.setColumnCount(4)
-        self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setColumnWidth(1, 160)
+        self.dateTableWidget = QTableWidgetItem("Дата")
+        self.resultTableWidget = QTableWidgetItem(result_value)
+        self.markTableWidget = QTableWidgetItem("Оценка \nрезультата")
+        self.commentTableWidget = QTableWidgetItem("Комментарий к результату")
 
-        self.date_value = QTableWidgetItem("Дата")
-        self.result_value = QTableWidgetItem(result_value)
-        self.mark_value = QTableWidgetItem("Оценка \nрезультата")
-        self.comment_value = QTableWidgetItem("Комментарий к результату")
+        self.tableWidget.setHorizontalHeaderItem(0, self.dateTableWidget)
+        self.tableWidget.setHorizontalHeaderItem(1, self.resultTableWidget)
+        self.tableWidget.setHorizontalHeaderItem(2, self.markTableWidget)
+        self.tableWidget.setHorizontalHeaderItem(3, self.commentTableWidget)
 
-        self.table.setHorizontalHeaderItem(0, self.date_value)
-        self.table.setHorizontalHeaderItem(1, self.result_value)
-        self.table.setHorizontalHeaderItem(2, self.mark_value)
-        self.table.setHorizontalHeaderItem(3, self.comment_value)
-
-        stylesheet1 = "::section{Background-color:#FFC973}"
-        self.table.horizontalHeader().setStyleSheet(stylesheet1)
-        stylesheet = "::section{Background-color:#E6E6FA}"
-        self.table.verticalHeader().setStyleSheet(stylesheet)
+        self.tableWidget.horizontalHeader().setStyleSheet(orange_color)
+        self.tableWidget.verticalHeader().setStyleSheet(gray_blue_color)
 
         self.fill_table()
 
-        self.title_delete_entry = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-                                         "Удалить запись:</span></p></body></html>", self)
-        self.title_delete_entry.setGeometry(450, 480, 141, 21)
+        # Deleting data
 
-        self.delete_row_of_entry = QLineEdit(self)
-        self.delete_row_of_entry.setPlaceholderText("Введите номер строки, которую хотите удалить")
-        self.delete_row_of_entry.setGeometry(450, 520, 291, 22)
+        self.lbl_delete_entry = QLabel(
+            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">Удалить запись:</span></p></body></html>",
+            self
+        )
+        self.lbl_delete_entry.setGeometry(450, 480, 141, 21)
+
+        self.delete_entry_by_number = QLineEdit(self)
+        self.delete_entry_by_number.setPlaceholderText("Введите номер строки, которую хотите удалить")
+        self.delete_entry_by_number.setGeometry(450, 520, 291, 22)
 
         self.btn_delete_entry = QPushButton("Удалить запись", self)
         self.btn_delete_entry.setGeometry(450, 560, 187, 28)
@@ -169,15 +192,17 @@ class MainWindow(QMainWindow):
         self.btn_delete_task.setGeometry(450, 410, 291, 28)
         self.btn_delete_task.clicked.connect(self.delete_task)
 
-        self.exit_to_authorization = QPushButton("Выход", self)
-        self.exit_to_authorization.setGeometry(450, 620, 291, 48)
-        self.exit_to_authorization.clicked.connect(self.back_window_authorization)
-        self.exit_to_authorization.setStyleSheet(light_blue_color)
+        # Logout from account
+
+        self.btn_logout = QPushButton("Выход", self)
+        self.btn_logout.setGeometry(450, 620, 291, 48)
+        self.btn_logout.clicked.connect(self.back_to_authorization)
+        self.btn_logout.setStyleSheet(light_blue_color)
 
     def download_chart(self, is_show=False):
-        task = self.btn_open_task.currentText()
+        current_task = self.btn_open_task.currentText()
         task_names = db.get_task_names(self.id_person)
-        index_task = task_names.index(task)
+        index_task = task_names.index(current_task)
         measurements = db.get_measurements(self.id_person)
         measurement = measurements[index_task]
         results = db.get_results(self.id_person)[index_task]
@@ -217,16 +242,16 @@ class MainWindow(QMainWindow):
             writer = csv.writer(file)
             writer.writerow([
                 self.date_value.text(),
-                self.result_value.text(),
+                self.resultTableWidget.text(),
                 self.mark_value.text(),
                 self.comment_value.text()
             ])
-            for i in range(self.table.rowCount()):
+            for i in range(self.tableWidget.rowCount()):
                 writer.writerow([
-                    self.table.item(i, 0).text(),
-                    self.table.item(i, 1).text(),
-                    self.table.item(i, 2).text(),
-                    self.table.item(i, 3).text()
+                    self.tableWidget.item(i, 0).text(),
+                    self.tableWidget.item(i, 1).text(),
+                    self.tableWidget.item(i, 2).text(),
+                    self.tableWidget.item(i, 3).text()
                 ])
         if file_type == "All Other_files(*.xlsx)":
             csv_file = pd.read_csv(csv_path)
@@ -239,11 +264,11 @@ class MainWindow(QMainWindow):
         self.about_program = AboutProgram()
         self.about_program.show()
 
-    def create_new_task(self, is_login_account=False, ex_main_window=None, parent=None, username=None, password=None):
+    def create_task(self, is_login_account=False, ex_main_window=None, parent=None, username=None, password=None):
         self.new_task = CreateTask(
             self.btn_open_task,
-            self.result_value,
-            self.table,
+            self.resultTableWidget,
+            self.tableWidget,
             self.id_person,
             is_login_account,
             ex_main_window,
@@ -256,7 +281,7 @@ class MainWindow(QMainWindow):
     def add_entry_to_table(self):
         self.add_entry = AddEntry(
             self.btn_open_task,
-            self.table,
+            self.tableWidget,
             self.id_person
         )
         self.add_entry.show()
@@ -273,14 +298,14 @@ class MainWindow(QMainWindow):
             marks = db.get_marks(self.id_person)[index_task]
             comments = db.get_comments(self.id_person)[index_task]
             row = 0
-            self.table.setRowCount(len(results))
+            self.tableWidget.setRowCount(len(results))
             for result, date, mark, comment in zip(results, dates, marks, comments):
                 time = str(date.time())[:-3]  # Преобразуем в формат hh:mm
                 date = ".".join(str(date.date()).split("-")[::-1])  # Преобразуем в формат dd.mm.yy
-                self.table.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
-                self.table.setItem(row, 1, QTableWidgetItem(str(result)))
-                self.table.setItem(row, 2, QTableWidgetItem(mark))
-                self.table.setItem(row, 3, QTableWidgetItem(comment))
+                self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
+                self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
+                self.tableWidget.setItem(row, 2, QTableWidgetItem(mark))
+                self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1
 
     def open_task(self, index, is_deleting_task=False, task=None):
@@ -294,8 +319,8 @@ class MainWindow(QMainWindow):
         measurement = measurements[index_task]
         if measurement not in ["Число", "Время"]:
             result_name = f"{result_name} ({measurement})"
-        self.result_value.setText(result_name)
-        self.table.setHorizontalHeaderItem(1, self.result_value)
+        self.resultTableWidget.setText(result_name)
+        self.tableWidget.setHorizontalHeaderItem(1, self.resultTableWidget)
         self.fill_table(task)
         self.plotting_option_1.setChecked(True)
         self.plotting_option_2.setChecked(False)
@@ -333,15 +358,15 @@ class MainWindow(QMainWindow):
             self.delete_row_of_entry.clear()
             # Заполняем таблицу с новыми данными
             row = 0
-            self.table.setRowCount(len(results[index_task]))
+            self.tableWidget.setRowCount(len(results[index_task]))
             for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task],
                                                    comments[index_task]):
                 time = str(date.time())[:-3]  # Преобразуем в формат hh:mm
                 date = ".".join(str(date.date()).split("-")[::-1])  # Преобразуем в формат dd.mm.yy
-                self.table.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
-                self.table.setItem(row, 1, QTableWidgetItem(str(result)))
-                self.table.setItem(row, 2, QTableWidgetItem(mark))
-                self.table.setItem(row, 3, QTableWidgetItem(comment))
+                self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
+                self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
+                self.tableWidget.setItem(row, 2, QTableWidgetItem(mark))
+                self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1
             # Добавляем в бд новые данные после удаления
             db.set_results(self.id_person, results)
@@ -390,7 +415,7 @@ class MainWindow(QMainWindow):
         else:
             warning_dialog_window.last_task_cannot_be_deleted()
 
-    def back_window_authorization(self):
+    def back_to_authorization(self):
         self.close()
         self.authorization = Authorization(MainWindow)
         self.authorization.show()

@@ -8,7 +8,6 @@ from Py_files.warnings import warning_dialog_window
 from Py_files.database import db
 
 
-# Класс для открытия окна: открыть задание
 class CreateTask(QDialog):
     def __init__(self, btn_open_task, result_value, table, id_person=None, is_login_account=False, ex_main_window=None,
                  parent=None, username=None, password=None):
@@ -54,37 +53,36 @@ class CreateTask(QDialog):
         task_name = self.name_task.text()
         result_name = self.name_result.text()
         measurement = self.unit_of_measurement.currentText()
-        if task_name and result_name:
-            if len(task_name) <= 30:
-                if len(result_name) <= 15:
-                    task_names = db.get_task_names(self.id_person)
-                    if task_name in task_names:
-                        warning_dialog_window.task_exists()
-                    else:
-                        db.set_new_task(self.id_person, task_name, result_name, measurement)
-                        if measurement not in ["Число", "Время"]:
-                            result_name = f"{result_name} ({measurement})"
-                        self.reject()
-                        self.btn_open_task.addItem(task_name)
-                        self.btn_open_task.setCurrentText(task_name)
-                        self.result_value.setText(result_name)
-                        results = db.get_results(self.id_person)
-                        dates = db.get_dates(self.id_person)
-                        marks = db.get_marks(self.id_person)
-                        comments = db.get_comments(self.id_person)
-                        db.set_results(self.id_person, results + [[]])
-                        db.set_dates(self.id_person, dates + [[]])
-                        db.set_marks(self.id_person, marks + [[]])
-                        db.set_comments(self.id_person, comments + [[]])
-                        self.table.setHorizontalHeaderItem(1, self.result_value)
-                        self.table.setRowCount(0)
-                        if self.is_login_account:
-                            self.parent.close()
-                            self.ex_main_window.show()
+        if 0 < len(task_name) <= 30:
+            if 0 < len(result_name) <= 15:
+                task_names = db.get_task_names(self.id_person)
+                if task_name in task_names:
+                    warning_dialog_window.task_already_exists()
                 else:
-                    warning_dialog_window.len_title_result_more_15()
+                    db.set_new_task(self.id_person, task_name, result_name, measurement)
+                    if measurement not in ["Число", "Время"]:
+                        result_name = f"{result_name} ({measurement})"
+                    self.reject()
+                    self.btn_open_task.addItem(task_name)
+                    self.btn_open_task.setCurrentText(task_name)
+                    self.result_value.setText(result_name)
+                    results = db.get_results(self.id_person)
+                    dates = db.get_dates(self.id_person)
+                    marks = db.get_marks(self.id_person)
+                    comments = db.get_comments(self.id_person)
+                    db.set_results(self.id_person, results + [[]])
+                    db.set_dates(self.id_person, dates + [[]])
+                    db.set_marks(self.id_person, marks + [[]])
+                    db.set_comments(self.id_person, comments + [[]])
+                    self.table.setHorizontalHeaderItem(1, self.result_value)
+                    self.table.setRowCount(0)
+                    if self.is_login_account:
+                        self.parent.close()
+                        self.ex_main_window.show()
             else:
-                warning_dialog_window.len_task_more_30()
+                warning_dialog_window.len_title_result_more_15()
+        else:
+            warning_dialog_window.len_task_more_30()
 
     def cancel(self):
         self.reject()
@@ -215,7 +213,6 @@ class AddEntry(QDialog):
         comments = db.get_comments(self.id_person)
         index_task = self.get_index_task()
         index_insert = self.get_index_insertion(date, dates)
-
         results[index_task].insert(index_insert, result)
         dates[index_task].insert(index_insert, date)
         marks[index_task].insert(index_insert, mark)
@@ -258,7 +255,7 @@ class AddEntry(QDialog):
         date = self.get_date()
         mark = self.mark.currentText()
         comment = self.comment.text()
-        if result and mark and date:
+        if result is not None and mark and date:
             self.insert_in_db(result, date, mark, comment)
             self.close()
 

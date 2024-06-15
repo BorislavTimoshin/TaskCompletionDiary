@@ -26,7 +26,7 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def task_exists():
+    def task_already_exists():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText("Задание с таким именем уже существует")

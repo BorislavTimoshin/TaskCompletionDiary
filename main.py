@@ -4,12 +4,13 @@ from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QRadioButton, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Py_files.main_buttons import CreateTask, AddEntry, AboutProgram, get_number_of_records_for_plotting
+from Py_files.main_buttons import CreateTask, AddAchievementToTable, AboutProgram, get_number_of_records_for_plotting
 from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
 from Py_files.chart import Chart
 from Py_files.database import db
 from Py_files.colors import *
+from datetime import datetime
 import pandas as pd
 import csv
 import os
@@ -23,18 +24,14 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, id_person):
+    def __init__(self, user_id):
         super().__init__()
-        self.id_person = id_person
+        self.user_id = user_id
         self.initUI()
 
     def initUI(self):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
-
-        task_names = db.get_task_names(self.id_person)
-        result_names = db.get_result_names(self.id_person)
-        measurements = db.get_measurements(self.id_person)
 
         # Icons for actions in the application Toolbar
 
@@ -77,11 +74,11 @@ class MainWindow(QMainWindow):
         self.btn_create_task.setStyleSheet(light_blue_color)
         self.addingDataHLayout.addWidget(self.btn_create_task)
 
-        self.btn_add_entry = QPushButton("Добавить запись", self)
-        self.btn_add_entry.setGeometry(310, 40, 131, 31)
-        self.btn_add_entry.clicked.connect(self.add_entry_to_table)
-        self.btn_add_entry.setStyleSheet(light_blue_color)
-        self.addingDataHLayout.addWidget(self.btn_add_entry)
+        self.btn_add_achievement = QPushButton("Добавить запись", self)
+        self.btn_add_achievement.setGeometry(310, 40, 131, 31)
+        self.btn_add_achievement.clicked.connect(self.add_achievement_to_table)
+        self.btn_add_achievement.setStyleSheet(light_blue_color)
+        self.addingDataHLayout.addWidget(self.btn_add_achievement)
 
         # Opening sport task
 
@@ -92,21 +89,20 @@ class MainWindow(QMainWindow):
         )
         self.lbl_open_task.setGeometry(20, 400, 141, 41)
 
-        self.btn_open_task = QComboBox(self)
-        self.btn_open_task.setGeometry(180, 410, 201, 22)
-        self.btn_open_task.addItems(task_names)
-        self.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.btn_open_task.view().pressed.connect(self.open_task)
+        task_names = db.get_task_names(self.user_id)
+        self.tasksCB = QComboBox(self)
+        self.tasksCB.setGeometry(180, 410, 201, 22)
+        self.tasksCB.addItems(task_names)
+        self.tasksCB.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.tasksCB.currentTextChanged.connect(self.open_task)
 
-        current_task = self.btn_open_task.currentText()
+        current_task = self.tasksCB.currentText()
         if current_task:
-            index_current_task = task_names.index(current_task)  # Fixme модифицировать БД
-            result_value = result_names[index_current_task]
-            measurement = measurements[index_current_task]
-            if measurement not in ["Число", "Время"]:
-                result_value = f"{result_value} ({measurement})"
-        else:
-            result_value = ""
+            result_name, measure = db.get_task(current_task, self.user_id)
+            if measure not in ["Число", "Время"]:
+                result_name = f"{result_name} ({measure})"
+        else:  # Если задание пустое, например при создании самого первого задания
+            result_name = ""
 
         # Plotting chart
 
@@ -158,7 +154,7 @@ class MainWindow(QMainWindow):
         self.tableWidget.setColumnWidth(1, 160)
 
         self.dateTableWidget = QTableWidgetItem("Дата")
-        self.resultTableWidget = QTableWidgetItem(result_value)
+        self.resultTableWidget = QTableWidgetItem(result_name)
         self.markTableWidget = QTableWidgetItem("Оценка \nрезультата")
         self.commentTableWidget = QTableWidgetItem("Комментарий к результату")
 
@@ -174,19 +170,19 @@ class MainWindow(QMainWindow):
 
         # Deleting data
 
-        self.lbl_delete_entry = QLabel(
+        self.lbl_delete_achievement = QLabel(
             "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">Удалить запись:</span></p></body></html>",
             self
         )
-        self.lbl_delete_entry.setGeometry(450, 480, 141, 21)
+        self.lbl_delete_achievement.setGeometry(450, 480, 141, 21)
 
-        self.delete_entry_by_number = QLineEdit(self)
-        self.delete_entry_by_number.setPlaceholderText("Введите номер строки, которую хотите удалить")
-        self.delete_entry_by_number.setGeometry(450, 520, 291, 22)
+        self.delete_achievement_by_numberLE = QLineEdit(self)
+        self.delete_achievement_by_numberLE.setPlaceholderText("Введите номер строки, которую хотите удалить")
+        self.delete_achievement_by_numberLE.setGeometry(450, 520, 291, 22)
 
-        self.btn_delete_entry = QPushButton("Удалить запись", self)
-        self.btn_delete_entry.setGeometry(450, 560, 187, 28)
-        self.btn_delete_entry.clicked.connect(self.delete_entry)
+        self.btn_delete_achievement = QPushButton("Удалить запись", self)
+        self.btn_delete_achievement.setGeometry(450, 560, 187, 28)
+        self.btn_delete_achievement.clicked.connect(self.delete_achievement)
 
         self.btn_delete_task = QPushButton("Удалить задачу", self)
         self.btn_delete_task.setGeometry(450, 410, 291, 28)
@@ -198,28 +194,55 @@ class MainWindow(QMainWindow):
         self.btn_logout.setGeometry(450, 620, 291, 48)
         self.btn_logout.clicked.connect(self.back_to_authorization)
         self.btn_logout.setStyleSheet(light_blue_color)
+        
+    def fill_table(self):
+        """ Метод заполняющий таблицу данными """
+        task_name = self.tasksCB.currentText()
+        achievements = db.get_achievements(task_name, self.user_id)
+        row = 0
+        self.tableWidget.setRowCount(len(achievements))
+        for date, result, mark, comment in achievements:
+            self.tableWidget.setItem(row, 0, QTableWidgetItem(date))
+            self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
+            self.tableWidget.setItem(row, 2, QTableWidgetItem(str(mark)))
+            self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
+            row += 1
+
+    def open_task(self, task_name):
+        """ Метод, открывающий выбранное пользователем задание и заполняющий таблицу """
+        result_name, measure = db.get_task(task_name, self.user_id)
+        if measure not in ["Число", "Время"]:
+            result_name = f"{result_name} ({measure})"
+        self.resultTableWidget.setText(result_name)
+        self.fill_table()
+        self.plotting_option_1.setChecked(True)
+        self.plotting_option_2.setChecked(False)
+        self.plotting_option_3.setChecked(False)
+        self.plotting_option_4.setChecked(False)
+        self.plotting_option_5.setChecked(False)
+        self.plotting_option_6.setChecked(False)
+        self.plotting_option_7.setChecked(False)
+        self.plotting_option_8.setChecked(False)
+        self.plotting_option_9.setChecked(False)
+        self.plotting_option_10.setChecked(False)
 
     def download_chart(self, is_show=False):
-        current_task = self.btn_open_task.currentText()
-        task_names = db.get_task_names(self.id_person)
-        index_task = task_names.index(current_task)
-        measurements = db.get_measurements(self.id_person)
-        measurement = measurements[index_task]
-        results = db.get_results(self.id_person)[index_task]
-        dates = db.get_dates(self.id_person)[index_task]
-        result_name = db.get_result_names(self.id_person)[index_task]
-        if measurement == "Число":
-            label_result = "Результат"
-        elif measurement == "Время":
-            results = list(map(lambda x: x.hour * 3600 + x.minute * 60 + x.second, results))
-            label_result = "Результат (с)"
+        current_task = self.tasksCB.currentText()
+        result_name, measure = db.get_task(current_task, self.user_id)
+        achievements = db.get_achievements(current_task, self.user_id)[::-1]
+        dates = list(map(lambda x: datetime.strptime(x[0], "%Y-%m-%d %H:%M:%S"), achievements))
+        results = list(map(lambda x: x[1], achievements))
+        if measure == "Число":
+            result_name = "Результат"
+        elif measure == "Время":
+            result_name = "Результат (с)"
         else:
-            label_result = f"{result_name} ({measurement})"
+            result_name = f"{result_name} ({measure})"
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
         values = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":
             values = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
-        chart = Chart(self, values, label_result)
+        chart = Chart(self, values, result_name)
         if is_show:
             chart.show()
             return
@@ -241,10 +264,10 @@ class MainWindow(QMainWindow):
         with open(csv_path, 'w', encoding="utf-8", newline='') as file:
             writer = csv.writer(file)
             writer.writerow([
-                self.date_value.text(),
+                self.dateTableWidget.text(),
                 self.resultTableWidget.text(),
-                self.mark_value.text(),
-                self.comment_value.text()
+                self.markTableWidget.text(),
+                self.commentTableWidget.text()
             ])
             for i in range(self.tableWidget.rowCount()):
                 writer.writerow([
@@ -266,10 +289,10 @@ class MainWindow(QMainWindow):
 
     def create_task(self, is_login_account=False, ex_main_window=None, parent=None, username=None, password=None):
         self.new_task = CreateTask(
-            self.btn_open_task,
+            self.tasksCB,
             self.resultTableWidget,
             self.tableWidget,
-            self.id_person,
+            self.user_id,
             is_login_account,
             ex_main_window,
             parent,
@@ -278,140 +301,52 @@ class MainWindow(QMainWindow):
         )
         self.new_task.show()
 
-    def add_entry_to_table(self):
-        self.add_entry = AddEntry(
-            self.btn_open_task,
+    def add_achievement_to_table(self):
+        self.add_achievement = AddAchievementToTable(
+            self.tasksCB,
             self.tableWidget,
-            self.id_person
+            self.user_id
         )
-        self.add_entry.show()
+        self.add_achievement.show()
 
-    def fill_table(self, task=None):
-        """ Метод заполняющий таблицу данными """
-        if task is None:
-            task = self.btn_open_task.currentText()
-        if task:  # Если текст задания не пустой
-            task_names = db.get_task_names(self.id_person)
-            index_task = task_names.index(task)
-            results = db.get_results(self.id_person)[index_task]
-            dates = db.get_dates(self.id_person)[index_task]
-            marks = db.get_marks(self.id_person)[index_task]
-            comments = db.get_comments(self.id_person)[index_task]
-            row = 0
-            self.tableWidget.setRowCount(len(results))
-            for result, date, mark, comment in zip(results, dates, marks, comments):
-                time = str(date.time())[:-3]  # Преобразуем в формат hh:mm
-                date = ".".join(str(date.date()).split("-")[::-1])  # Преобразуем в формат dd.mm.yy
-                self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
-                self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
-                self.tableWidget.setItem(row, 2, QTableWidgetItem(mark))
-                self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
-                row += 1
-
-    def open_task(self, index, is_deleting_task=False, task=None):
-        """ Метод, открывающий выбранное пользователем задание и заполняющий таблицу """
-        if not is_deleting_task:
-            task = self.btn_open_task.model().itemFromIndex(index).text()
-        task_names = db.get_task_names(self.id_person)
-        index_task = task_names.index(task)
-        result_name = db.get_result_names(self.id_person)[index_task]
-        measurements = db.get_measurements(self.id_person)
-        measurement = measurements[index_task]
-        if measurement not in ["Число", "Время"]:
-            result_name = f"{result_name} ({measurement})"
-        self.resultTableWidget.setText(result_name)
-        self.tableWidget.setHorizontalHeaderItem(1, self.resultTableWidget)
-        self.fill_table(task)
-        self.plotting_option_1.setChecked(True)
-        self.plotting_option_2.setChecked(False)
-        self.plotting_option_3.setChecked(False)
-        self.plotting_option_4.setChecked(False)
-        self.plotting_option_5.setChecked(False)
-        self.plotting_option_6.setChecked(False)
-        self.plotting_option_7.setChecked(False)
-        self.plotting_option_8.setChecked(False)
-        self.plotting_option_9.setChecked(False)
-        self.plotting_option_10.setChecked(False)
-
-    def delete_entry(self):
-        number_entry = self.delete_row_of_entry.text()
+    def delete_achievement(self):
+        achievement_number = self.delete_achievement_by_numberLE.text()
         try:
-            number_entry = int(number_entry) - 1
+            achievement_number = int(achievement_number) - 1
         except ValueError:
             warning_dialog_window.is_not_number()
             return
-        task = self.btn_open_task.currentText()
-        task_names = db.get_task_names(self.id_person)
-        index_task = task_names.index(task)
-        results = db.get_results(self.id_person)
-        dates = db.get_dates(self.id_person)
-        marks = db.get_marks(self.id_person)
-        comments = db.get_comments(self.id_person)
-        if (len(results[index_task]) < number_entry + 1) or number_entry < 0:
-            warning_dialog_window.row_not_exists()
+        task_name = self.tasksCB.currentText()
+        achievements = db.get_achievements(task_name, self.user_id)
+        if (len(achievements) < (achievement_number + 1)) or achievement_number < 0:
+            warning_dialog_window.line_number_not_exist()
         else:
-            # Удаляем элементы с номером строки, который ввели
-            del results[index_task][number_entry]
-            del dates[index_task][number_entry]
-            del marks[index_task][number_entry]
-            del comments[index_task][number_entry]
-            self.delete_row_of_entry.clear()
+            achievement = achievements[achievement_number]
+            del achievements[achievement_number]
+            db.delete_achievement(*achievement, task_name, self.user_id)
             # Заполняем таблицу с новыми данными
             row = 0
-            self.tableWidget.setRowCount(len(results[index_task]))
-            for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task],
-                                                   comments[index_task]):
-                time = str(date.time())[:-3]  # Преобразуем в формат hh:mm
-                date = ".".join(str(date.date()).split("-")[::-1])  # Преобразуем в формат dd.mm.yy
-                self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{date} {time}"))
+            self.tableWidget.setRowCount(len(achievements))
+            for date, result, mark, comment in achievements:
+                self.tableWidget.setItem(row, 0, QTableWidgetItem(date))
                 self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
-                self.tableWidget.setItem(row, 2, QTableWidgetItem(mark))
+                self.tableWidget.setItem(row, 2, QTableWidgetItem(str(mark)))
                 self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1
-            # Добавляем в бд новые данные после удаления
-            db.set_results(self.id_person, results)
-            db.set_dates(self.id_person, dates)
-            db.set_marks(self.id_person, marks)
-            db.set_comments(self.id_person, comments)
 
     def delete_task(self):
-        task = self.btn_open_task.currentText()
-        task_names = db.get_task_names(self.id_person)
-        if len(task_names) > 1:
-            answer = warning_dialog_window.want_delete_task(self)
+        task_name = self.tasksCB.currentText()
+        task_names = db.get_task_names(self.user_id)
+        if len(task_names) > 1:  # Если хотя бы одно задание после удаления останется
+            answer = warning_dialog_window.delete_task_or_not(self)
             if answer:
-                index_task = task_names.index(task)
-                result_names = db.get_result_names(self.id_person)
-                measurements = db.get_measurements(self.id_person)
-                results = db.get_results(self.id_person)
-                dates = db.get_dates(self.id_person)
-                marks = db.get_marks(self.id_person)
-                comments = db.get_comments(self.id_person)
-                # Удаляем, все, что связано с этим заданием
-                self.btn_open_task.removeItem(index_task)
-                del task_names[index_task]
-                del result_names[index_task]
-                del measurements[index_task]
-                del results[index_task]
-                del dates[index_task]
-                del marks[index_task]
-                del comments[index_task]
-                # Добавляем в бд новые данные после удаления
-                db.set_result_names(self.id_person, result_names)
-                db.set_task_names(self.id_person, task_names)
-                db.set_measurements(self.id_person, measurements)
-                db.set_results(self.id_person, results)
-                db.set_dates(self.id_person, dates)
-                db.set_marks(self.id_person, marks)
-                db.set_comments(self.id_person, comments)
-                # Открываем первое задание
-                self.btn_open_task.setCurrentIndex(0)
-                self.open_task(
-                    0,
-                    is_deleting_task=True,
-                    task=task_names[0]
-                )
-
+                # Удаляем текущее задание
+                self.tasksCB.removeItem(task_names.index(task_name))
+                db.delete_task(task_name, self.user_id)
+                # Переносим курсор на первое задание и открываем его
+                self.tasksCB.setCurrentIndex(0)
+                new_task_name = self.tasksCB.itemText(0)
+                self.open_task(new_task_name)
         else:
             warning_dialog_window.last_task_cannot_be_deleted()
 

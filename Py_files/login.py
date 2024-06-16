@@ -85,24 +85,25 @@ class Login(QMainWindow):
         self.lbl_user_not_exists.setGeometry(300, 360, 261, 51)
         self.lbl_user_not_exists.hide()
 
-    def login(self):
+    def login(self) -> None:
         username = self.usernameLE.text()
         password = self.passwordLE.text()
         if username and password:
-            if db.person_exists(username, password):
+            if db.user_exists(username, password):
                 self.open_main_window(username)
             else:
                 self.lbl_user_not_exists.show()
 
-    def return_to_authorization(self):
+    def return_to_authorization(self) -> None:
+        """ Return from login to authorization """
         self.close()
         self.authorization = self.authorization(
             main_window=self.main_window
         )
         self.authorization.show()
 
-    def open_main_window(self, username):
+    def open_main_window(self, username: str) -> None:
         self.close()
-        self.id_person = db.get_id_person(username)
-        self.main_window = self.main_window(self.id_person)
+        self.user_id = db.get_user_id(username)
+        self.main_window = self.main_window(self.user_id)
         self.main_window.show()

@@ -9,15 +9,15 @@ from Py_files.database import db
 
 
 class CreateTask(QDialog):
-    def __init__(self, btn_open_task, result_value, table, id_person=None, is_login_account=False, ex_main_window=None,
+    def __init__(self, tasksCB, result_value, table, user_id=None, is_login_account=False, main_window=None,
                  parent=None, username=None, password=None):
         super().__init__(parent)
-        self.btn_open_task = btn_open_task
+        self.tasksCB = tasksCB
         self.result_value = result_value
         self.table = table
-        self.id_person = id_person
+        self.user_id = user_id
         self.is_login_account = is_login_account
-        self.ex_main_window = ex_main_window
+        self.main_window = main_window
         self.parent = parent
         self.username = username
         self.password = password
@@ -29,20 +29,20 @@ class CreateTask(QDialog):
         buttons_new_task = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
         form_layout = QFormLayout(self)
 
-        self.title_name_task = "Название задачи (не более 20 символов)"
-        self.name_task = QLineEdit(self)
-        self.name_task.setPlaceholderText("Например, бег по утрам")
-        form_layout.addRow(self.title_name_task, self.name_task)
+        self.title_task_name = "Название задачи (не более 20 символов)"
+        self.task_nameLE = QLineEdit(self)
+        self.task_nameLE.setPlaceholderText("Например, бег по утрам")
+        form_layout.addRow(self.title_task_name, self.task_nameLE)
 
-        self.title_name_result = "Название результата (не более 15 символов)"
-        self.name_result = QLineEdit(self)
-        self.name_result.setPlaceholderText("Например, расстояние")
-        form_layout.addRow(self.title_name_result, self.name_result)
+        self.title_result_name = "Название результата (не более 15 символов)"
+        self.result_nameLE = QLineEdit(self)
+        self.result_nameLE.setPlaceholderText("Например, расстояние")
+        form_layout.addRow(self.title_result_name, self.result_nameLE)
 
-        self.title_unit_of_measurement = "Единица измерения результата"
-        self.unit_of_measurement = QComboBox(self)
-        self.unit_of_measurement.addItems(["Число", "кг", "см", "м", "км", "м/с", "км/ч", "Время"])
-        form_layout.addRow(self.title_unit_of_measurement, self.unit_of_measurement)
+        self.title_unit_of_measure = "Единица измерения результата"
+        self.unit_of_measure_CB = QComboBox(self)
+        self.unit_of_measure_CB.addItems(["Число", "кг", "см", "м", "км", "м/с", "км/ч", "Время"])
+        form_layout.addRow(self.title_unit_of_measure, self.unit_of_measure_CB)
 
         form_layout.addWidget(buttons_new_task)
         buttons_new_task.accepted.connect(self.ok)
@@ -50,58 +50,55 @@ class CreateTask(QDialog):
 
     def ok(self):
         """ Метод для обработки создания задания """
-        task_name = self.name_task.text()
-        result_name = self.name_result.text()
-        measurement = self.unit_of_measurement.currentText()
-        if 0 < len(task_name) <= 30:
-            if 0 < len(result_name) <= 15:
-                task_names = db.get_task_names(self.id_person)
+        task_name = self.task_nameLE.text()
+        result_name = self.result_nameLE.text()
+        measure = self.unit_of_measure_CB.currentText()
+        if not task_name:
+            warning_dialog_window.len_task_name_is_0()
+            return
+        if not result_name:
+            warning_dialog_window.len_result_name_is_0()
+            return
+        if len(task_name) <= 30:
+            if len(result_name) <= 15:
+                task_names = db.get_task_names(self.user_id)
                 if task_name in task_names:
                     warning_dialog_window.task_already_exists()
                 else:
-                    db.set_new_task(self.id_person, task_name, result_name, measurement)
-                    if measurement not in ["Число", "Время"]:
-                        result_name = f"{result_name} ({measurement})"
-                    self.reject()
-                    self.btn_open_task.addItem(task_name)
-                    self.btn_open_task.setCurrentText(task_name)
+                    db.add_task(task_name, result_name, measure, self.user_id)
+                    if measure not in ["Число", "Время"]:
+                        result_name = f"{result_name} ({measure})"
+                    self.reject()  # Сlose the window
+                    self.tasksCB.addItem(task_name)
+                    self.tasksCB.setCurrentText(task_name)
                     self.result_value.setText(result_name)
-                    results = db.get_results(self.id_person)
-                    dates = db.get_dates(self.id_person)
-                    marks = db.get_marks(self.id_person)
-                    comments = db.get_comments(self.id_person)
-                    db.set_results(self.id_person, results + [[]])
-                    db.set_dates(self.id_person, dates + [[]])
-                    db.set_marks(self.id_person, marks + [[]])
-                    db.set_comments(self.id_person, comments + [[]])
                     self.table.setHorizontalHeaderItem(1, self.result_value)
                     self.table.setRowCount(0)
                     if self.is_login_account:
                         self.parent.close()
-                        self.ex_main_window.show()
+                        self.main_window.show()
             else:
                 warning_dialog_window.len_title_result_more_15()
         else:
-            warning_dialog_window.len_task_more_30()
+            warning_dialog_window.len_task_name_more_30()
 
     def cancel(self):
         self.reject()
         if self.is_login_account:
-            db.delete_person(self.id_person)
+            db.delete_user(self.user_id)
 
     def closeEvent(self, event):
         event.accept()
         if self.is_login_account:
-            db.delete_person(self.id_person)
+            db.delete_user(self.user_id)
 
 
-# Класс для открытия окна: добавить запись в таблицу
-class AddEntry(QDialog):
-    def __init__(self, btn_open_task, table, id_person=None):
+class AddAchievementToTable(QDialog):
+    def __init__(self, tasksCB, table, user_id=None):
         super().__init__()
-        self.btn_open_task = btn_open_task
+        self.tasksCB = tasksCB
         self.table = table
-        self.id_person = id_person
+        self.user_id = user_id
         self.initUI()
 
     def initUI(self):
@@ -111,9 +108,15 @@ class AddEntry(QDialog):
         buttons_add_entry = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
         buttons_add_entry.move(580, 600)
 
-        self.title_result = QLabel(f"<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
-                                   f"Укажите {self.get_result_name()}:</span></p></body></html>", self)
-        self.title_result.setGeometry(10, 0, 331, 31)
+        task_name = self.tasksCB.currentText()
+        result_name, measure = db.get_task(task_name, self.user_id)
+
+        self.lbl_result = QLabel(
+            f"<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
+            f"Укажите {result_name}:</span></p></body></html>",
+            self
+        )
+        self.lbl_result.setGeometry(10, 0, 331, 31)
 
         self.result_in_form_int = QLineEdit(self)
         self.result_in_form_int.setGeometry(10, 40, 261, 31)
@@ -124,7 +127,7 @@ class AddEntry(QDialog):
         self.result_in_form_time.setGeometry(10, 40, 261, 31)
         self.result_in_form_time.hide()
 
-        if self.get_measurement() == "Время":
+        if measure == "Время":
             self.result_in_form_time.show()
         else:
             self.result_in_form_int.show()
@@ -164,38 +167,6 @@ class AddEntry(QDialog):
         buttons_add_entry.accepted.connect(self.accept)
         buttons_add_entry.rejected.connect(self.reject)
 
-    def get_index_task(self):
-        """ Получить индекс текущего выбранного задания в btn_open_task в списке заданий бд """
-        task = self.btn_open_task.currentText()
-        tasks = db.get_task_names(self.id_person)
-        return tasks.index(task)
-
-    def get_result_name(self):
-        """ Получить имя результата, которое вставится в заголовок таблицы в соответствии с выбранным заданием """
-        result_names = db.get_result_names(self.id_person)
-        index_result = self.get_index_task()
-        return result_names[index_result]
-
-    def get_measurement(self):
-        """ Получить единицу измерения результата """
-        measurements = db.get_measurements(self.id_person)
-        index_measurement = self.get_index_task()
-        return measurements[index_measurement]
-
-    def get_index_insertion(self, date, dates):
-        """ Получить индекс в вставки в список списка: в список конкретного задания """
-        index_task = self.get_index_task()
-        dates = dates[index_task]
-        start = 0
-        end = len(dates)
-        while start < end:
-            mid = (start + end) // 2
-            if dates[mid] > date:
-                start = mid + 1
-            else:
-                end = mid
-        return start
-
     def get_date(self):
         date = datetime(
             year=self.calendarWidget.selectedDate().year(),
@@ -206,39 +177,25 @@ class AddEntry(QDialog):
         )
         return date
 
-    def insert_in_db(self, result, date, mark, comment):
-        results = db.get_results(self.id_person)
-        dates = db.get_dates(self.id_person)
-        marks = db.get_marks(self.id_person)
-        comments = db.get_comments(self.id_person)
-        index_task = self.get_index_task()
-        index_insert = self.get_index_insertion(date, dates)
-        results[index_task].insert(index_insert, result)
-        dates[index_task].insert(index_insert, date)
-        marks[index_task].insert(index_insert, mark)
-        comments[index_task].insert(index_insert, comment)
-        self.table.setRowCount(len(results[index_task]))
+    def add_achievement_to_database(self, date, result, mark, comment):
+        task_name = self.tasksCB.currentText()
+        # TODO Сделать проверку на то, есть ли уже такое достижение у человека (в этот день, такой же результат)
+        db.add_achievement(date, result, mark, comment, task_name, self.user_id)
+        achievements = db.get_achievements(task_name, self.user_id)
+        self.table.setRowCount(len(achievements))
         row = 0
-
-        for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task],
-                                               comments[index_task]):
-            hh_mm = str(date.time())[:-3]  # Преобразуем в формат hh:mm
-            date = ".".join(str(date.date()).split("-")[::-1])  # Преобразуем в формат dd.mm.yy
-            self.table.setItem(row, 0, QTableWidgetItem(f"{date} {hh_mm}"))
+        for date, result, mark, comment in achievements:
+            self.table.setItem(row, 0, QTableWidgetItem(date))
             self.table.setItem(row, 1, QTableWidgetItem(str(result)))
-            self.table.setItem(row, 2, QTableWidgetItem(mark))
+            self.table.setItem(row, 2, QTableWidgetItem(str(mark)))
             self.table.setItem(row, 3, QTableWidgetItem(comment))
             row += 1
 
-        db.set_results(self.id_person, results)
-        db.set_dates(self.id_person, dates)
-        db.set_marks(self.id_person, marks)
-        db.set_comments(self.id_person, comments)
-
     def accept(self):
-        measurement = self.get_measurement()
+        task_name = self.tasksCB.currentText()
+        measure = db.get_measure(task_name, self.user_id)
         result = None
-        if measurement == "Время":
+        if measure == "Время":
             result = self.result_in_form_time.time()
             result = time(
                 hour=result.hour(),
@@ -255,12 +212,11 @@ class AddEntry(QDialog):
         date = self.get_date()
         mark = self.mark.currentText()
         comment = self.comment.text()
-        if result is not None and mark and date:
-            self.insert_in_db(result, date, mark, comment)
+        if result is not None:
+            self.add_achievement_to_database(date, result, mark, comment)
             self.close()
 
 
-# Класс для открытия диалогового окна: о программе
 class AboutProgram(QDialog):
     def __init__(self):
         super().__init__()

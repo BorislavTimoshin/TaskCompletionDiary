@@ -3,12 +3,23 @@ from PyQt5.QtWidgets import QMessageBox
 
 # Не обработана ошибка, если данных в таблице нет и человек хочет построить график, то программа падает
 # Было бы прикольно добавить срез данных, допустим, за предыдущие 7 дней по всем задачам (посмотреть текущую форму спортсмена)
+# Было бы прикольно добавить возможность просмотреть комментарий пошире, а то места мало
+# Было бы прикольно добавить возможность изменять дату, результат, оценку, комментарий прямо из таблицы
 
 
 # Класс для вывода диалоговых окон с предупреждениями
 class WarningDialogWindow:
     @staticmethod
-    def len_task_more_30():
+    def len_task_name_is_0():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Название задачи не может быть пустым")
+        msg.setWindowTitle("Ошибка в названии задачи")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec()
+
+    @staticmethod
+    def len_task_name_more_30():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText("Длина названия задачи должна быть не более 30 символов")
@@ -17,7 +28,16 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def len_title_result_more_15():
+    def len_result_name_is_0():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Название результата не может быть пустым")
+        msg.setWindowTitle("Ошибка в названии результата")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec()
+
+    @staticmethod
+    def len_result_name_more_15():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText("Длина названия результата должна быть не более 15 символов")
@@ -44,7 +64,7 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def row_not_exists():
+    def line_number_not_exist():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText("Номера данной строки не существует")
@@ -62,7 +82,7 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def want_delete_task(parent):
+    def delete_task_or_not(parent):
         msg = QMessageBox()
         answer = msg.question(
             parent,

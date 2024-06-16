@@ -85,26 +85,29 @@ class Registration(QMainWindow):
         self.lbl_nickname_exists.setGeometry(200, 360, 371, 31)
         self.lbl_nickname_exists.hide()
 
-    def registration(self):
+    def registration(self) -> None:
+        """ User registration: adding a user to the database """
         username = self.usernameLE.text()
         password = self.passwordLE.text()
         if username and password:
             if db.name_exists(username):
                 self.lbl_nickname_exists.show()
             else:
-                db.set_person(username, password)
+                db.add_user(username, password)
                 self.open_main_window(username, password)
 
-    def return_to_authorization(self):
+    def return_to_authorization(self) -> None:
+        """ Return from registration to authorization """
         self.close()
         self.authorization = self.authorization(
             main_window=self.main_window
         )
         self.authorization.show()
 
-    def open_main_window(self, username, password):
-        self.id_person = db.get_id_person(username)
-        self.main_window = self.main_window(self.id_person)
+    def open_main_window(self, username: str, password: str) -> None:
+        """ Creating a task and then opening the main window """
+        user_id = db.get_user_id(username)
+        self.main_window = self.main_window(user_id)
         # Fixme Убрать груду параметров ниже, привести в порядок метод .create_task() (должно быть симметрично Login)
         self.main_window.create_task(
             is_login_account=True,

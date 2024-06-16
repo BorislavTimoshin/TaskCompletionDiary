@@ -2,190 +2,237 @@ import sqlite3
 import datetime
 
 
-# Класс для работы с базой данных
 class Database:
     def __init__(self, database_name):
         self.connection = sqlite3.connect(database_name)
         self.cursor = self.connection.cursor()
 
-    def person_exists(self, username: str, password: str) -> bool:
+    def user_exists(self, name: str, password: str) -> bool:  # FIXME почитать теорию про Exists
+        """ Checking whether a user exists in the database """
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `username` FROM `Users` WHERE `username` = ? AND `password` = ?",
-                (username, password,)
-            ).fetchall()
+            query = """
+                SELECT 
+                  `name` 
+                FROM 
+                  `People` 
+                WHERE 
+                  `name` = ? 
+                  AND `password` = ?;
+            """
+            result = self.cursor.execute(query, (name, password,)).fetchall()
             return bool(result)
 
-    def name_exists(self, username):
+    def name_exists(self, name: str) -> bool:  # FIXME почитать теорию про Exists
+        """ Checking if a name exists in the database """
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `username` FROM `Users` WHERE `username` = ?",
-                (username,)
-            ).fetchall()
+            query = """
+                SELECT 
+                  `name` 
+                FROM 
+                  `People` 
+                WHERE 
+                  `name` = ?;
+            """
+            result = self.cursor.execute(query, (name,)).fetchall()
             return bool(result)
 
-    def set_person(self, username, password):
+    def add_user(self, name: str, password: str) -> None:
+        """ Adding a user to the database """
         with self.connection:
-            self.cursor.execute(
-                "INSERT INTO `Users` (`username`, `password`) VALUES (?, ?)",
-                (username, password,)
-            )
-            self.cursor.execute(
-                "INSERT INTO `Tasks` (`id`) VALUES (?)",
-                (self.get_id_person(username),)
-            )
+            query = """ 
+                INSERT INTO `People` (`name`, `password`) 
+                VALUES 
+                  (?, ?);
+            """
+            self.cursor.execute(query, (name, password,))
             self.connection.commit()
 
-    def delete_person(self, id_person):
+    def delete_user(self, user_id: int) -> None:
+        """ Removing a user from the database.
+         Important: deletion occurs only at the moment the account creation
+         is canceled, so the ID is deleted only from the People table """
         with self.connection:
-            self.cursor.execute(
-                "DELETE FROM `Users` WHERE `id` = ?",
-                (id_person,)
-            )
-            self.cursor.execute(
-                "DELETE FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
+            query = """
+                DELETE FROM 
+                  `People` 
+                WHERE 
+                  `id` = ?;
+            """
+            self.cursor.execute(query, (user_id,))
 
-    def get_id_person(self, username):
+    def get_user_id(self, name: str) -> int:
+        """ Getting user id from database """
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `id` FROM `Users` WHERE `username` = ?",
-                (username,)
-            ).fetchall()
-            for i in result:
-                return i[0]
+            query = """
+                SELECT 
+                  `id` 
+                FROM 
+                  `People` 
+                WHERE 
+                  `name` = ?;
+            """
+            result = self.cursor.execute(query, (name,)).fetchone()
+            return result[0]
 
-    def set_task_names(self, id_person, task_names):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `task_names` = ? WHERE `id` = ?",
-            (str(task_names), id_person,)
-        )
-        self.connection.commit()
-
-    def get_task_names(self, id_person):
+    def add_task(self, task_name, result_name, measure, user_id):
+        """ Adding task information: task name, task result name, unit of measurement """
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `task_names` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            ).fetchall()
-            for i in result:
-                return eval(i[0])
-
-    def set_result_names(self, id_person, result_names):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `result_names` = ? WHERE `id` = ?",
-            (str(result_names), id_person,)
-        )
-        self.connection.commit()
-
-    def get_result_names(self, id_person):
-        with self.connection:
-            result = self.cursor.execute(
-                "SELECT `result_names` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            ).fetchall()
-            for i in result:
-                return eval(i[0])
-
-    def set_measurements(self, id_person, measurements):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `measurements` = ? WHERE `id` = ?",
-            (str(measurements), id_person,)
-        )
-        self.connection.commit()
-
-    def get_measurements(self, id_person):
-        with self.connection:
-            result = self.cursor.execute(
-                "SELECT `measurements` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            ).fetchall()
-            for i in result:
-                return eval(i[0])
-
-    def set_new_task(self, id_person, task_name, result_name, measurement):
-        with self.connection:
-            task_names = self.get_task_names(id_person)
-            self.cursor.execute(
-                "UPDATE `Tasks` SET `task_names` = ? WHERE `id` = ?",
-                (str(task_names + [task_name]), id_person,)
-            )
-            result_names = self.get_result_names(id_person)
-            self.cursor.execute(
-                "UPDATE `Tasks` SET `result_names` = ? WHERE `id` = ?",
-                (str(result_names + [result_name]), id_person,)
-            )
-            measurements = self.get_measurements(id_person)
-            self.cursor.execute(
-                "UPDATE `Tasks` SET `measurements` = ? WHERE `id` = ?",
-                (str(measurements + [measurement]), id_person,)
-            )
+            query = """ 
+                INSERT INTO `Tasks` (`task_name`, `result_name`, `measure`, `id`) 
+                VALUES
+                  (?, ?, ?, ?);
+            """
+            self.cursor.execute(query, (task_name, result_name, measure, user_id,))
             self.connection.commit()
 
-    def get_results(self, id_person):
+    def get_task(self, task_name: str, user_id: int) -> tuple[str]:
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `results` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
+            query = """
+                SELECT 
+                  result_name,
+                  measure
+                FROM 
+                  `Tasks` 
+                WHERE 
+                  `task_name` = ? 
+                  AND `id` = ?;
+            """
+            result = self.cursor.execute(query, (task_name, user_id,)).fetchall()
+            return result[0]
 
-    def set_results(self, id_person, results):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `results` = ? WHERE `id` = ?",
-            (str(results), id_person,)
-        )
-        self.connection.commit()
-
-    def get_dates(self, id_person):
+    def get_task_id(self, task_name: str, user_id: int) -> int:
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `dates` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
+            query = """
+                SELECT 
+                  task_id 
+                FROM 
+                  `Tasks` 
+                WHERE 
+                  `task_name` = ? 
+                  AND `id` = ?;
+            """
+            result = self.cursor.execute(query, (task_name, user_id,)).fetchone()
+            return result[0]
 
-    def set_dates(self, id_person, dates):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `dates` = ? WHERE `id` = ?",
-            (str(dates), id_person,)
-        )
-        self.connection.commit()
-
-    def get_marks(self, id_person):
+    def get_task_names(self, user_id: int) -> list[str]:
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `marks` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
+            query = """
+                SELECT 
+                  task_name 
+                FROM 
+                  `Tasks` 
+                WHERE 
+                  `id` = ?;
+            """
+            result = self.cursor.execute(query, (user_id,)).fetchall()
+            task_names = list(map(lambda x: x[0], result))
+            return task_names
 
-    def set_marks(self, id_person, marks):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `marks` = ? WHERE `id` = ?",
-            (str(marks), id_person,)
-        )
-        self.connection.commit()
-
-    def get_comments(self, id_person):
+    def get_task_ids(self, user_id: int) -> list[int]:
+        """ Retrieving IDs of all user tasks """
         with self.connection:
-            result = self.cursor.execute(
-                "SELECT `comments` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
+            query = """
+                SELECT 
+                  task_id 
+                FROM 
+                  `Tasks` 
+                WHERE 
+                  `id` = ?;
+            """
+            result = self.cursor.execute(query, (user_id,)).fetchall()
+            task_ids = list(map(lambda x: x[0], result))
+            return task_ids
 
-    def set_comments(self, id_person, comments):
-        self.cursor.execute(
-            "UPDATE `Tasks` SET `comments` = ? WHERE `id` = ?",
-            (str(comments), id_person,)
-        )
-        self.connection.commit()
+    def delete_task(self, task_name, user_id):
+        with self.connection:
+            query1 = """
+                DELETE FROM 
+                  `Tasks` 
+                WHERE 
+                  `task_id` = ?;
+            """
+            query2 = """
+                DELETE FROM 
+                  `Achievements` 
+                WHERE 
+                  `task_id` = ?;
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            self.cursor.execute(query1, (task_id,))
+            self.cursor.execute(query2, (task_id,))
+
+    def add_achievement(self, date: datetime.datetime, result: int, mark: int, comment: str, task_name: str, user_id: int) -> None:
+        with self.connection:
+            query = """ 
+                INSERT INTO `Achievements` (`date`, `result`, `mark`, `comment`, `task_id`) 
+                VALUES
+                  (?, ?, ?, ?, ?)
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            self.cursor.execute(query, (date, result, mark, comment, task_id,))
+            self.connection.commit()
+
+    def delete_achievement(self, date: datetime.datetime, result: int, mark: int, comment: str, task_name: str, user_id: int) -> None:
+        with self.connection:
+            query = """
+                DELETE FROM
+                  `Achievements`
+                WHERE
+                  `date` = ?
+                  AND `result` = ?
+                  AND `mark` = ?
+                  AND `comment` = ?
+                  AND `task_id` = ?
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            self.cursor.execute(query, (date, result, mark, comment, task_id))
+            self.connection.commit()
+
+    def get_achievements(self, task_name: str, user_id: int) -> list[tuple[datetime.datetime, int, int, str]]:
+        with self.connection:
+            query = """
+                SELECT
+                  date,
+                  result,
+                  mark,
+                  comment
+                FROM 
+                  `Achievements`
+                WHERE 
+                  `task_id` = ?
+                ORDER BY date DESC;
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            result = self.cursor.execute(query, (task_id,)).fetchall()
+            return result
+
+    def get_measure(self, task_name: str, user_id: int) -> str:
+        with self.connection:
+            query = """
+                SELECT
+                  measure
+                FROM 
+                  `Tasks`
+                WHERE 
+                  `task_id` = ?
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            result = self.cursor.execute(query, (task_id,)).fetchone()
+            return result[0]
+
+    def get_result_name(self, task_name: str, user_id: int) -> str:
+        with self.connection:
+            query = """
+                SELECT
+                  result_name
+                FROM 
+                  `Tasks`
+                WHERE 
+                  `task_id` = ?
+            """
+            task_id = self.get_task_id(task_name, user_id)
+            result = self.cursor.execute(query, (task_id,)).fetchone()
+            return result[0]
 
 
-db = Database("Other_files/database.sqlite")  # Экземпляр класса Database для работы с бд
+db = Database("Other_files/database.sqlite")

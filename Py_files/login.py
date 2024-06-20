@@ -11,7 +11,7 @@ class Login(QMainWindow):
         self.authorization = authorization
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Вход в аккаунт")
 
@@ -54,12 +54,12 @@ class Login(QMainWindow):
 
         # Data input
 
-        self.usernameLE = QLineEdit(self)
-        self.usernameLE.setGeometry(330, 200, 271, 22)
+        self.LE_username = QLineEdit(self)
+        self.LE_username.setGeometry(330, 200, 271, 22)
 
-        self.passwordLE = QLineEdit(self)
-        self.passwordLE.setEchoMode(QLineEdit.EchoMode.Password)
-        self.passwordLE.setGeometry(330, 270, 271, 22)
+        self.LE_password = QLineEdit(self)
+        self.LE_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.LE_password.setGeometry(330, 270, 271, 22)
 
         # Login
 
@@ -86,11 +86,12 @@ class Login(QMainWindow):
         self.lbl_user_not_exists.hide()
 
     def login(self) -> None:
-        username = self.usernameLE.text()
-        password = self.passwordLE.text()
+        username = self.LE_username.text()
+        password = self.LE_password.text()
         if username and password:
             if db.user_exists(username, password):
-                self.open_main_window(username)
+                user_id = db.get_user_id(username)
+                self.open_main_window(user_id)
             else:
                 self.lbl_user_not_exists.show()
 
@@ -102,8 +103,7 @@ class Login(QMainWindow):
         )
         self.authorization.show()
 
-    def open_main_window(self, username: str) -> None:
+    def open_main_window(self, user_id: int) -> None:
         self.close()
-        self.user_id = db.get_user_id(username)
-        self.main_window = self.main_window(self.user_id)
-        self.main_window.show()
+        self.ex_main_window = self.main_window(user_id)
+        self.ex_main_window.show()

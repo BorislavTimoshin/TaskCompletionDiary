@@ -11,7 +11,7 @@ class Registration(QMainWindow):
         self.authorization = authorization
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Регистрация")
 
@@ -54,12 +54,12 @@ class Registration(QMainWindow):
 
         # Data input
 
-        self.usernameLE = QLineEdit(self)
-        self.usernameLE.setGeometry(330, 200, 271, 22)
+        self.LE_username = QLineEdit(self)
+        self.LE_username.setGeometry(330, 200, 271, 22)
 
-        self.passwordLE = QLineEdit(self)
-        self.passwordLE.setEchoMode(QLineEdit.EchoMode.Password)
-        self.passwordLE.setGeometry(330, 270, 271, 22)
+        self.LE_password = QLineEdit(self)
+        self.LE_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.LE_password.setGeometry(330, 270, 271, 22)
 
         # Login
 
@@ -77,24 +77,25 @@ class Registration(QMainWindow):
 
         # About nickname
 
-        self.lbl_nickname_exists = QLabel(
+        self.lbl_nickname_already_exists = QLabel(
             "<html><head/><body><p><span style=\" font-size:9pt; color:#ff0000;\">"
             "Пользователь с таким никнеймом уже существует</span></p></body></html>",
             self
         )
-        self.lbl_nickname_exists.setGeometry(200, 360, 371, 31)
-        self.lbl_nickname_exists.hide()
+        self.lbl_nickname_already_exists.setGeometry(200, 360, 371, 31)
+        self.lbl_nickname_already_exists.hide()
 
     def registration(self) -> None:
         """ User registration: adding a user to the database """
-        username = self.usernameLE.text()
-        password = self.passwordLE.text()
+        username = self.LE_username.text()
+        password = self.LE_password.text()
         if username and password:
             if db.name_exists(username):
-                self.lbl_nickname_exists.show()
+                self.lbl_nickname_already_exists.show()
             else:
                 db.add_user(username, password)
-                self.open_main_window(username, password)
+                user_id = db.get_user_id(username)
+                self.open_main_window(user_id)
 
     def return_to_authorization(self) -> None:
         """ Return from registration to authorization """
@@ -104,15 +105,8 @@ class Registration(QMainWindow):
         )
         self.authorization.show()
 
-    def open_main_window(self, username: str, password: str) -> None:
+    def open_main_window(self, user_id: int) -> None:
         """ Creating a task and then opening the main window """
-        user_id = db.get_user_id(username)
-        self.main_window = self.main_window(user_id)
-        # Fixme Убрать груду параметров ниже, привести в порядок метод .create_task() (должно быть симметрично Login)
-        self.main_window.create_task(
-            is_login_account=True,
-            ex_main_window=self.main_window,
-            parent=self,
-            username=username,
-            password=password
-        )
+        self.close()
+        self.ex_main_window = self.main_window(user_id)
+        self.ex_main_window.show()

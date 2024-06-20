@@ -1,9 +1,9 @@
-import sys
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel
 from PyQt5.QtGui import QPixmap
 from Py_files.login import Login
 from Py_files.registration import Registration
 from Py_files.colors import *
+import sys
 
 
 class Authorization(QMainWindow):
@@ -12,7 +12,7 @@ class Authorization(QMainWindow):
         self.main_window = main_window
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Авторизация")
 
@@ -67,7 +67,7 @@ class Authorization(QMainWindow):
         self.btn_logout.clicked.connect(self.logout)
         self.btn_logout.setStyleSheet(light_blue_color)
 
-    def open_login_window(self):
+    def open_login_window(self) -> None:
         self.close()
         self.login = Login(
             main_window=self.main_window,
@@ -75,7 +75,7 @@ class Authorization(QMainWindow):
         )
         self.login.show()
 
-    def open_registration_window(self):
+    def open_registration_window(self) -> None:
         self.close()
         self.registration = Registration(
             main_window=self.main_window,
@@ -84,6 +84,6 @@ class Authorization(QMainWindow):
         self.registration.show()
 
     @staticmethod
-    def logout():
+    def logout() -> None:
         """ Exit from application """
         sys.exit()

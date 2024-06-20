@@ -4,7 +4,9 @@ from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtWidgets import QLineEdit, QFileDialog, QRadioButton, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Py_files.main_buttons import CreateTask, AddAchievementToTable, AboutProgram, get_number_of_records_for_plotting
+from Py_files.about_program import AboutProgram, get_number_of_records_for_plotting
+from Py_files.adding_achievement import AddAchievementToTable
+from Py_files.creating_task import CreateTask
 from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
 from Py_files.chart import Chart
@@ -38,12 +40,14 @@ class MainWindow(QMainWindow):
         self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
         self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
         self.show_chart_action = QAction(QIcon("Images/chart.png"), "Показать график", self)
+        self.program_description_action = QAction(QIcon("Images/information.png"), "Описание программы", self)
         self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
 
         self.download_chart_action.triggered.connect(self.download_chart)
         self.download_table_action.triggered.connect(self.download_table)
         self.show_chart_action.triggered.connect(self.show_chart)
-        self.program_version_action.triggered.connect(self.about_program_dialog)
+        self.program_description_action.triggered.connect(self.view_program_description)
+        self.program_version_action.triggered.connect(self.view_program_version)
 
         # The application Toolbar
 
@@ -57,6 +61,7 @@ class MainWindow(QMainWindow):
         self.menu_data.addAction(self.show_chart_action)
 
         self.menu_about_program = self.menu_bar.addMenu("О программе")
+        self.menu_about_program.addAction(self.program_description_action)
         self.menu_about_program.addAction(self.program_version_action)
 
         # Buttons:
@@ -65,6 +70,7 @@ class MainWindow(QMainWindow):
 
         self.addingDataWidget = QWidget(self)
         self.addingDataWidget.setGeometry(10, 10, 771, 80)
+
         self.addingDataHLayout = QHBoxLayout(self.addingDataWidget)
         self.addingDataHLayout.setContentsMargins(0, 0, 0, 0)
 
@@ -76,7 +82,7 @@ class MainWindow(QMainWindow):
 
         self.btn_add_achievement = QPushButton("Добавить запись", self)
         self.btn_add_achievement.setGeometry(310, 40, 131, 31)
-        self.btn_add_achievement.clicked.connect(self.add_achievement_to_table)
+        self.btn_add_achievement.clicked.connect(self.add_achievement)
         self.btn_add_achievement.setStyleSheet(light_blue_color)
         self.addingDataHLayout.addWidget(self.btn_add_achievement)
 
@@ -90,19 +96,18 @@ class MainWindow(QMainWindow):
         self.lbl_open_task.setGeometry(20, 400, 141, 41)
 
         task_names = db.get_task_names(self.user_id)
-        self.tasksCB = QComboBox(self)
-        self.tasksCB.setGeometry(180, 410, 201, 22)
-        self.tasksCB.addItems(task_names)
-        self.tasksCB.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.tasksCB.currentTextChanged.connect(self.open_task)
+        self.CB_tasks = QComboBox(self)
+        self.CB_tasks.setGeometry(180, 410, 201, 22)
+        self.CB_tasks.addItems(task_names)
+        self.CB_tasks.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.CB_tasks.currentTextChanged.connect(self.open_task)
 
-        current_task = self.tasksCB.currentText()
-        if current_task:
-            result_name, measure = db.get_task(current_task, self.user_id)
-            if measure not in ["Число", "Время"]:
-                result_name = f"{result_name} ({measure})"
-        else:  # Если задание пустое, например при создании самого первого задания
-            result_name = ""
+        current_task = self.CB_tasks.currentText()
+        result_name, measure = db.get_task(current_task, self.user_id)
+        if result_name is None and measure is None:
+            result_name = "Результат"
+        elif measure not in ["Число", "Время"]:
+            result_name = f"{result_name} ({measure})"
 
         # Plotting chart
 
@@ -113,7 +118,7 @@ class MainWindow(QMainWindow):
         )
         self.lbl_plotting.setGeometry(20, 470, 341, 41)
 
-        self.plotting_option_1 = QRadioButton("Первые 30 записей", self)  # Fixme модифицировать выбор записей
+        self.plotting_option_1 = QRadioButton("Первые 30 записей", self)  # FIXME модифицировать выбор записей
         self.plotting_option_1.setGeometry(20, 520, 141, 21)
         self.plotting_option_1.setChecked(True)
 
@@ -176,9 +181,9 @@ class MainWindow(QMainWindow):
         )
         self.lbl_delete_achievement.setGeometry(450, 480, 141, 21)
 
-        self.delete_achievement_by_numberLE = QLineEdit(self)
-        self.delete_achievement_by_numberLE.setPlaceholderText("Введите номер строки, которую хотите удалить")
-        self.delete_achievement_by_numberLE.setGeometry(450, 520, 291, 22)
+        self.LE_delete_achievement_by_number = QLineEdit(self)
+        self.LE_delete_achievement_by_number.setPlaceholderText("Введите номер строки, которую хотите удалить")
+        self.LE_delete_achievement_by_number.setGeometry(450, 520, 291, 22)
 
         self.btn_delete_achievement = QPushButton("Удалить запись", self)
         self.btn_delete_achievement.setGeometry(450, 560, 187, 28)
@@ -194,22 +199,21 @@ class MainWindow(QMainWindow):
         self.btn_logout.setGeometry(450, 620, 291, 48)
         self.btn_logout.clicked.connect(self.back_to_authorization)
         self.btn_logout.setStyleSheet(light_blue_color)
-        
-    def fill_table(self):
-        """ Метод заполняющий таблицу данными """
-        task_name = self.tasksCB.currentText()
+
+    def fill_table(self) -> None:
+        """ Filling the table with the user's achievements for the current sports task """
+        task_name = self.CB_tasks.currentText()
         achievements = db.get_achievements(task_name, self.user_id)
-        row = 0
         self.tableWidget.setRowCount(len(achievements))
-        for date, result, mark, comment in achievements:
-            self.tableWidget.setItem(row, 0, QTableWidgetItem(date))
+        for row, (date, result, mark, comment) in enumerate(achievements):
+            year, month, day = date.split("-")
+            self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{day}.{month}.{year}"))
             self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
             self.tableWidget.setItem(row, 2, QTableWidgetItem(str(mark)))
             self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
-            row += 1
 
-    def open_task(self, task_name):
-        """ Метод, открывающий выбранное пользователем задание и заполняющий таблицу """
+    def open_task(self, task_name) -> None:
+        """ Opening a user's sport task """
         result_name, measure = db.get_task(task_name, self.user_id)
         if measure not in ["Число", "Время"]:
             result_name = f"{result_name} ({measure})"
@@ -226,32 +230,87 @@ class MainWindow(QMainWindow):
         self.plotting_option_9.setChecked(False)
         self.plotting_option_10.setChecked(False)
 
-    def download_chart(self, is_show=False):
-        current_task = self.tasksCB.currentText()
+    def create_task(self) -> None:
+        """ Creating a task: task name, result name, unit of measurement """
+        self.creating_task = CreateTask(self)
+        self.creating_task.show()
+
+    def delete_task(self) -> None:
+        """ Deleting a task and everything associated with it """
+        task_name = self.CB_tasks.currentText()
+        task_names = db.get_task_names(self.user_id)
+        if len(task_names) > 1:  # Если хотя бы одно задание после удаления останется
+            answer = warning_dialog_window.delete_task_or_not(self)
+            if answer:
+                # Удаляем текущее задание
+                self.CB_tasks.removeItem(task_names.index(task_name))
+                db.delete_task(task_name, self.user_id)
+                # Переносим курсор на первое задание и открываем его
+                self.CB_tasks.setCurrentIndex(0)
+                new_task_name = self.CB_tasks.itemText(0)
+                self.open_task(new_task_name)
+        else:
+            warning_dialog_window.last_task_cannot_be_deleted()
+
+    def add_achievement(self) -> None:
+        """ Adding an achievement to the table: result date, result, rating, comment """
+        self.close()
+        self.adding_achievement = AddAchievementToTable(self)
+        self.adding_achievement.show()
+
+    def delete_achievement(self) -> None:
+        """ Removing an achievement from the table: result date, result, rating, comment """
+        achievement_number = self.LE_delete_achievement_by_number.text()
+        try:
+            achievement_number = int(achievement_number) - 1
+        except ValueError:
+            warning_dialog_window.is_not_number()
+            return
+        task_name = self.CB_tasks.currentText()
+        achievements = db.get_achievements(task_name, self.user_id)
+        if (len(achievements) < (achievement_number + 1)) or achievement_number < 0:
+            warning_dialog_window.line_number_not_exist()
+        else:
+            achievement = achievements[achievement_number]
+            db.delete_achievement(*achievement, task_name, self.user_id)
+            self.fill_table()  # Заполняем таблицу обновленными данными
+
+    def get_ex_chart(self) -> Chart:
+        """ Getting an exemplar of the Chart class, thanks to which you
+        can work with the chart: demonstrate, download, and more """
+        current_task = self.CB_tasks.currentText()
         result_name, measure = db.get_task(current_task, self.user_id)
         achievements = db.get_achievements(current_task, self.user_id)[::-1]
-        dates = list(map(lambda x: datetime.strptime(x[0], "%Y-%m-%d %H:%M:%S"), achievements))
-        results = list(map(lambda x: x[1], achievements))
+        dates = []
+        results = []
+        for date, result, mark, comment in achievements:
+            dates.append(datetime.strptime(date, "%Y-%m-%d"))
+            results.append(result)
         if measure == "Число":
-            result_name = "Результат"
+            pass
         elif measure == "Время":
-            result_name = "Результат (с)"
+            result_name = f"{result_name} (с)"
         else:
             result_name = f"{result_name} ({measure})"
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
-        values = pd.Series(results, index=dates)
+        points = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":
-            values = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
-        chart = Chart(self, values, result_name)
-        if is_show:
-            chart.show()
-            return
-        chart.download_chart()
+            points = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
+        chart = Chart(points, current_task, result_name, self)
+        return chart
 
-    def show_chart(self):
-        self.download_chart(is_show=True)
+    def show_chart(self) -> None:
+        """ Demonstration of a graph of the results of the current sports task as a foto """
+        self.chart = self.get_ex_chart()
+        self.chart.show_chart()
 
-    def download_table(self):
+    def download_chart(self) -> None:
+        """ Exporting a graph of the results of the current sports task as a photo """
+        self.chart = self.get_ex_chart()
+        self.chart.download_chart()
+
+    def download_table(self) -> None:
+        """ Export table data from an application """
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             'Скачать таблицу',
@@ -263,94 +322,41 @@ class MainWindow(QMainWindow):
         csv_path = file_path.replace(".xlsx", ".csv")
         with open(csv_path, 'w', encoding="utf-8", newline='') as file:
             writer = csv.writer(file)
+            # Adding Column Titles to a CSV File
             writer.writerow([
                 self.dateTableWidget.text(),
                 self.resultTableWidget.text(),
                 self.markTableWidget.text(),
                 self.commentTableWidget.text()
             ])
-            for i in range(self.tableWidget.rowCount()):
+            # Adding achievements to a CSV file
+            for row in range(self.tableWidget.rowCount()):
                 writer.writerow([
-                    self.tableWidget.item(i, 0).text(),
-                    self.tableWidget.item(i, 1).text(),
-                    self.tableWidget.item(i, 2).text(),
-                    self.tableWidget.item(i, 3).text()
+                    self.tableWidget.item(row, 0).text(),
+                    self.tableWidget.item(row, 1).text(),
+                    self.tableWidget.item(row, 2).text(),
+                    self.tableWidget.item(row, 3).text()
                 ])
         if file_type == "All Other_files(*.xlsx)":
+            # FIXME модифицировать конвертацию
             csv_file = pd.read_csv(csv_path)
             excel_file = pd.ExcelWriter(file_path)
             csv_file.to_excel(excel_file, index=False)
             excel_file._save()
             os.remove(csv_path)
 
-    def about_program_dialog(self):
-        self.about_program = AboutProgram()
-        self.about_program.show()
+    def view_program_description(self) -> None:
+        """ View the program description: how to use the application """
+        self.ex_about_program = AboutProgram()
+        self.ex_about_program.program_description()
 
-    def create_task(self, is_login_account=False, ex_main_window=None, parent=None, username=None, password=None):
-        self.new_task = CreateTask(
-            self.tasksCB,
-            self.resultTableWidget,
-            self.tableWidget,
-            self.user_id,
-            is_login_account,
-            ex_main_window,
-            parent,
-            username,
-            password
-        )
-        self.new_task.show()
+    def view_program_version(self) -> None:
+        """ View the program version: for developers """
+        self.ex_about_program = AboutProgram()
+        self.ex_about_program.program_version()
 
-    def add_achievement_to_table(self):
-        self.add_achievement = AddAchievementToTable(
-            self.tasksCB,
-            self.tableWidget,
-            self.user_id
-        )
-        self.add_achievement.show()
-
-    def delete_achievement(self):
-        achievement_number = self.delete_achievement_by_numberLE.text()
-        try:
-            achievement_number = int(achievement_number) - 1
-        except ValueError:
-            warning_dialog_window.is_not_number()
-            return
-        task_name = self.tasksCB.currentText()
-        achievements = db.get_achievements(task_name, self.user_id)
-        if (len(achievements) < (achievement_number + 1)) or achievement_number < 0:
-            warning_dialog_window.line_number_not_exist()
-        else:
-            achievement = achievements[achievement_number]
-            del achievements[achievement_number]
-            db.delete_achievement(*achievement, task_name, self.user_id)
-            # Заполняем таблицу с новыми данными
-            row = 0
-            self.tableWidget.setRowCount(len(achievements))
-            for date, result, mark, comment in achievements:
-                self.tableWidget.setItem(row, 0, QTableWidgetItem(date))
-                self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
-                self.tableWidget.setItem(row, 2, QTableWidgetItem(str(mark)))
-                self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
-                row += 1
-
-    def delete_task(self):
-        task_name = self.tasksCB.currentText()
-        task_names = db.get_task_names(self.user_id)
-        if len(task_names) > 1:  # Если хотя бы одно задание после удаления останется
-            answer = warning_dialog_window.delete_task_or_not(self)
-            if answer:
-                # Удаляем текущее задание
-                self.tasksCB.removeItem(task_names.index(task_name))
-                db.delete_task(task_name, self.user_id)
-                # Переносим курсор на первое задание и открываем его
-                self.tasksCB.setCurrentIndex(0)
-                new_task_name = self.tasksCB.itemText(0)
-                self.open_task(new_task_name)
-        else:
-            warning_dialog_window.last_task_cannot_be_deleted()
-
-    def back_to_authorization(self):
+    def back_to_authorization(self) -> None:
+        """ Logging out of your account (proceeding to authorization) """
         self.close()
         self.authorization = Authorization(MainWindow)
         self.authorization.show()

@@ -2,51 +2,59 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QFileDialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.dates as mdates
+from pandas.core.series import Series
 from math import ceil
 
 
 class Chart(QMainWindow):
-    def __init__(self, parent, values, label_result):
-        super().__init__(parent)
+    def __init__(self, points: Series, task_name: str, result_name: str, ex_main_window=None):
+        super().__init__()
+        self.points = points
+        self.task_name = task_name
+        self.result_name = result_name
+        self.ex_main_window = ex_main_window
+        self.initUI()
 
-        self.values = values
-        self.label_result = label_result
-
+    def initUI(self) -> None:
         self.setWindowTitle("График результатов")
         self.setGeometry(100, 100, 800, 600)
 
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.canvas)
+        self.chartLayout = QVBoxLayout()
+        self.chartLayout.addWidget(self.canvas)
 
-        widget = QWidget()
-        widget.setLayout(self.layout)
-        self.setCentralWidget(widget)
+        chartWidget = QWidget()
+        chartWidget.setLayout(self.chartLayout)
+        self.setCentralWidget(chartWidget)
 
-        self.show_chart()
-
-    def show_chart(self):
-        ax = self.figure.add_subplot(111)
+    def draw_chart(self) -> None:
+        ax = self.figure.add_subplot(111)  # FIXME что это
         ax.plot(
-            self.values.index,
-            self.values.values,
+            self.points.index,
+            self.points.values,
+            marker='o',
             color='blue',
             linestyle='--',
             linewidth=2,
         )
         ax.set(
             xlabel="Дата",
-            ylabel=self.label_result,
-            title="График результатов"
+            ylabel=self.result_name,
+            title=self.task_name
         )
         ax.grid()
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d/%m/%y'))
-        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=ceil(len(self.values) / 10)))
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%y'))
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=ceil(len(self.points) / 10)))
         plt.gcf().autofmt_xdate()
         self.canvas.draw()
 
-    def download_chart(self):
+    def show_chart(self) -> None:
+        self.draw_chart()
+        self.show()
+
+    def download_chart(self) -> None:
+        self.draw_chart()
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             'Скачать график',

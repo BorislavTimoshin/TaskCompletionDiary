@@ -38,12 +38,12 @@ class Registration(QMainWindow):
         )
         self.lbl_registration.setGeometry(330, 110, 261, 61)
 
-        self.lbl_about_username = QLabel(
+        self.lbl_about_login = QLabel(
             "<html><head/><body><p><span style=\" font-size:10pt;\">"
-            "Введите никнейм</span></p></body></html>",
+            "Введите логин</span></p></body></html>",
             self
         )
-        self.lbl_about_username.setGeometry(330, 170, 191, 20)
+        self.lbl_about_login.setGeometry(330, 170, 191, 20)
 
         self.lbl_about_password = QLabel(
             "<html><head/><body><p><span style=\" font-size:10pt;\">"
@@ -54,8 +54,8 @@ class Registration(QMainWindow):
 
         # Data input
 
-        self.LE_username = QLineEdit(self)
-        self.LE_username.setGeometry(330, 200, 271, 22)
+        self.LE_login = QLineEdit(self)
+        self.LE_login.setGeometry(330, 200, 271, 22)
 
         self.LE_password = QLineEdit(self)
         self.LE_password.setEchoMode(QLineEdit.EchoMode.Password)
@@ -79,7 +79,7 @@ class Registration(QMainWindow):
 
         self.lbl_nickname_already_exists = QLabel(
             "<html><head/><body><p><span style=\" font-size:9pt; color:#ff0000;\">"
-            "Пользователь с таким никнеймом уже существует</span></p></body></html>",
+            "Пользователь с таким логином уже существует</span></p></body></html>",
             self
         )
         self.lbl_nickname_already_exists.setGeometry(200, 360, 371, 31)
@@ -87,23 +87,21 @@ class Registration(QMainWindow):
 
     def registration(self) -> None:
         """ User registration: adding a user to the database """
-        username = self.LE_username.text()
+        login = self.LE_login.text()
         password = self.LE_password.text()
-        if username and password:
-            if db.name_exists(username):
+        if login and password:
+            if db.login_exists(login):
                 self.lbl_nickname_already_exists.show()
             else:
-                db.add_user(username, password)
-                user_id = db.get_user_id(username)
+                db.add_user(login, password)
+                user_id = db.get_user_id(login)
                 self.open_main_window(user_id)
 
     def return_to_authorization(self) -> None:
         """ Return from registration to authorization """
         self.close()
-        self.authorization = self.authorization(
-            main_window=self.main_window
-        )
-        self.authorization.show()
+        self.ex_authorization = self.authorization(self.main_window)
+        self.ex_authorization.show()
 
     def open_main_window(self, user_id: int) -> None:
         """ Creating a task and then opening the main window """

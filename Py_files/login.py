@@ -38,12 +38,12 @@ class Login(QMainWindow):
         )
         self.lbl_authorization.setGeometry(330, 110, 261, 61)
 
-        self.lbl_about_username = QLabel(
+        self.lbl_about_login = QLabel(
             "<html><head/><body><p><span style=\" font-size:10pt;\">"
-            "Введите никнейм</span></p></body></html>",
+            "Введите логин</span></p></body></html>",
             self
         )
-        self.lbl_about_username.setGeometry(330, 170, 191, 20)
+        self.lbl_about_login.setGeometry(330, 170, 191, 20)
 
         self.lbl_about_password = QLabel(
             "<html><head/><body><p><span style=\" font-size:10pt;\">"
@@ -54,8 +54,8 @@ class Login(QMainWindow):
 
         # Data input
 
-        self.LE_username = QLineEdit(self)
-        self.LE_username.setGeometry(330, 200, 271, 22)
+        self.LE_login = QLineEdit(self)
+        self.LE_login.setGeometry(330, 200, 271, 22)
 
         self.LE_password = QLineEdit(self)
         self.LE_password.setEchoMode(QLineEdit.EchoMode.Password)
@@ -66,7 +66,7 @@ class Login(QMainWindow):
         self.btn_login = QPushButton("Войти", self)
         self.btn_login.setGeometry(330, 310, 161, 28)
         self.btn_login.setStyleSheet(light_blue_color)
-        self.btn_login.clicked.connect(self.login)
+        self.btn_login.clicked.connect(self.login_to_account)
 
         # Return to authorization
 
@@ -77,31 +77,29 @@ class Login(QMainWindow):
 
         # About user
 
-        self.lbl_user_not_exists = QLabel(
+        self.lbl_wrong_name_or_password = QLabel(
             "<html><head/><body><p><span style=\" font-size:10pt; color:#ff3613;\">"
-            "Пользователя не существует</span></p></body></html>",
+            "Неверный логин или пароль</span></p></body></html>",
             self
         )
-        self.lbl_user_not_exists.setGeometry(300, 360, 261, 51)
-        self.lbl_user_not_exists.hide()
+        self.lbl_wrong_name_or_password.setGeometry(300, 360, 261, 51)
+        self.lbl_wrong_name_or_password.hide()
 
-    def login(self) -> None:
-        username = self.LE_username.text()
+    def login_to_account(self) -> None:
+        login = self.LE_login.text()
         password = self.LE_password.text()
-        if username and password:
-            if db.user_exists(username, password):
-                user_id = db.get_user_id(username)
+        if login and password:
+            if db.user_exists(login, password):
+                user_id = db.get_user_id(login)
                 self.open_main_window(user_id)
             else:
-                self.lbl_user_not_exists.show()
+                self.lbl_wrong_name_or_password.show()
 
     def return_to_authorization(self) -> None:
         """ Return from login to authorization """
         self.close()
-        self.authorization = self.authorization(
-            main_window=self.main_window
-        )
-        self.authorization.show()
+        self.ex_authorization = self.authorization(self.main_window)
+        self.ex_authorization.show()
 
     def open_main_window(self, user_id: int) -> None:
         self.close()

@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QFileDialog
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.dates as mdates
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from pandas.core.series import Series
 from math import ceil
 
@@ -28,8 +29,11 @@ class Chart(QMainWindow):
         chartWidget.setLayout(self.chartLayout)
         self.setCentralWidget(chartWidget)
 
+        self.draw_chart()
+
     def draw_chart(self) -> None:
-        ax = self.figure.add_subplot(111)  # FIXME что это
+        """ Creating a chart and drawing it """
+        ax = self.figure.subplots()
         ax.plot(
             self.points.index,
             self.points.values,
@@ -50,11 +54,9 @@ class Chart(QMainWindow):
         self.canvas.draw()
 
     def show_chart(self) -> None:
-        self.draw_chart()
         self.show()
 
     def download_chart(self) -> None:
-        self.draw_chart()
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             'Скачать график',

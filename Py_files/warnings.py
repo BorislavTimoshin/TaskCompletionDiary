@@ -1,19 +1,14 @@
 from PyQt5.QtWidgets import QMessageBox
 
 
-# TODO Не обработана ошибка, если данных в таблице нет и человек хочет построить график, то программа падает
 # Было бы прикольно добавить срез данных, допустим, за предыдущие 7 дней по всем задачам (посмотреть текущую форму спортсмена)
 # Было бы прикольно добавить возможность просмотреть комментарий пошире, а то места мало
 # Было бы прикольно добавить возможность изменять дату, результат, оценку, комментарий прямо из таблицы
 # Сделать иконку для .exe файла
 # Сделать возможность поменять язык
 # Заменить на Скачать -> График, Таблица
-# TODO Пользователь не найден. Если пароль неверный, но юзер есть, то заменить на пароль неверный
-# TODO Добавить обработку события, когда нет никакой задачи, но при этом юзер хочет добавить запись или удалить задачу
 # Надо подумать, как модифицировать график, когда данных много, так как множество жирных точек выглядит некрасиво
-# Было б не плохо, чтобы после удадения записи, номер строки в LineEdit удалился
-# Дописать описание работы с приложением
-
+# TODO добавить обработку реультата с единицей измерения ВРЕМЯ
 
 class WarningDialogWindow:
     @staticmethod
@@ -62,11 +57,11 @@ class WarningDialogWindow:
         msg.exec()
 
     @staticmethod
-    def is_not_number():
+    def is_not_integer():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Введенное значение не является числом")
-        msg.setWindowTitle("Ошибка в указании числа")
+        msg.setText("Введенное значение не является целым числом")
+        msg.setWindowTitle("Ошибка в указании целого числа")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()
 
@@ -74,27 +69,50 @@ class WarningDialogWindow:
     def line_number_not_exist():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Номера данной строки не существует")
+        msg.setText("Номера данной строки не существует              ")
         msg.setWindowTitle("Ошибка в написании номера удаления строки")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()
 
     @staticmethod
-    def last_task_cannot_be_deleted():
+    def no_achievements_to_plot():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Последняя задача не может быть удалена")
-        msg.setWindowTitle("Ошибка в удалении задачи")
+        msg.setText("Нет достижений для построения графика")
+        msg.setWindowTitle("Ошибка в построении графика")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()
 
     @staticmethod
-    def delete_task_or_not(parent):
+    def task_not_created():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Задача не создана              ")
+        msg.setWindowTitle("Ошибка в создании задачи")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec()
+
+    @staticmethod
+    def delete_task_or_not(parent) -> bool:
         msg = QMessageBox()
         answer = msg.question(
             parent,
             "Удаление задачи",
             "Хотите удалить задачу? Восстановление будет невозможно",
+            msg.Yes | msg.No
+        )
+        if answer == msg.Yes:
+            return True
+        if answer == msg.No:
+            return False
+
+    @staticmethod
+    def replace_with_similar_date(parent) -> bool:
+        msg = QMessageBox()
+        answer = msg.question(
+            parent,
+            "Ошибка в указании даты",
+            "Результат с такой датой уже есть в таблице. Хотите заменить?",
             msg.Yes | msg.No
         )
         if answer == msg.Yes:

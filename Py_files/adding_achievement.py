@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget, QCalendarWidget, QVBoxLayout
 from PyQt5.QtGui import QCloseEvent
 from Py_files.warnings import warning_dialog_window
 from Py_files.database import db
-from datetime import date
+import datetime
 
 
 class AddAchievementToTable(QDialog):
@@ -85,18 +85,24 @@ class AddAchievementToTable(QDialog):
         add_achievement_btns.accepted.connect(self.accept)
         add_achievement_btns.rejected.connect(self.cancel)
 
-    def get_date_of_achievement(self):
-        date_of_achievement = date(
+    def get_date_of_achievement(self) -> datetime.date:
+        """ Getting the date on which the achievement was completed """
+        date = datetime.date(
             year=self.calendarWidget.selectedDate().year(),
             month=self.calendarWidget.selectedDate().month(),
             day=self.calendarWidget.selectedDate().day()
         )
-        return date_of_achievement
+        return date
 
-    def accept(self):
+    def accept(self) -> None:
+        """ Processing data to add achievement to the table """
         task_name = self.ex_main_window.CB_tasks.currentText()
+        current_date = self.get_date_of_achievement()
+        previous_dates = db.get_dates(task_name, self.ex_main_window.user_id)
+        mark = self.CB_mark.currentText()
+        comment = self.LE_comment.text()
         measure = db.get_measure(task_name, self.ex_main_window.user_id)
-        result = None
+        # Checking the correctness of the entered result
         if measure == "Время":
             result = self.TE_result_in_form_time.time()
             result = result.hour() * 3600 + result.minute() * 60 + result.second()
@@ -107,15 +113,19 @@ class AddAchievementToTable(QDialog):
                     result = int(result)
             except ValueError:
                 warning_dialog_window.is_not_number()
-        date_of_achievement = self.get_date_of_achievement()
-        mark = self.CB_mark.currentText()
-        comment = self.LE_comment.text()
-        if result is not None:
-            self.reject()
-            # TODO Сделать проверку на то, есть ли уже такое достижение у человека (в этот день, такой же результат)
-            db.add_achievement(date_of_achievement, result, mark, comment, task_name, self.ex_main_window.user_id)
-            self.ex_main_window.fill_table()
-            self.ex_main_window.show()
+                return
+        # Checking whether an achievement occurred on a specified date
+        if current_date in previous_dates:  # If a result with a similar date is already in the table
+            if warning_dialog_window.replace_with_similar_date(self):  # We suggest replacing (first delete, then add)
+                db.delete_achievement(current_date, task_name, self.ex_main_window.user_id)
+            else:
+                return
+        # Closing a window
+        self.reject()
+        # Adding an achievement
+        db.add_achievement(current_date, result, mark, comment, task_name, self.ex_main_window.user_id)
+        self.ex_main_window.fill_table()
+        self.ex_main_window.show()
 
     def cancel(self) -> None:
         """ Closing the dialog box (AddAchievementToTable) by clicking on "cancel" """

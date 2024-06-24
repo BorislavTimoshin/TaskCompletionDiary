@@ -25,22 +25,22 @@
     </property>
     <column>
      <property name="text">
-      <string>Результат</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
       <string>Дата</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>Оценка результата</string>
+      <string>Результат</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>Комментарий к результату</string>
+      <string>Оценка</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Комментарий</string>
      </property>
     </column>
    </widget>
@@ -55,23 +55,16 @@
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QPushButton" name="new_entry_2">
-       <property name="text">
-        <string>Новая запись</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="new_task_2">
        <property name="text">
-        <string>Новая задача</string>
+        <string>Создать задачу</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="open_task_2">
        <property name="text">
-        <string>Открыть задачу</string>
+        <string>Добавить запись</string>
        </property>
       </widget>
      </item>

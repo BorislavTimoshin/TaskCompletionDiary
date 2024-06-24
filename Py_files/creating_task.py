@@ -42,12 +42,14 @@ class CreateTask(QDialog):
         task_name = self.LE_task_name.text()
         result_name = self.LE_result_name.text()
         measure = self.CB_measure.currentText()
+        # Checking for empty task name and result name
         if not task_name:
             warning_dialog_window.len_task_name_is_0()
             return
         if not result_name:
             warning_dialog_window.len_result_name_is_0()
             return
+        # Checking the task name and result name for valid length
         if len(task_name) <= 30:
             if len(result_name) <= 15:
                 task_names = db.get_task_names(self.ex_main_window.user_id)

@@ -12,7 +12,7 @@ from Py_files.authorization import Authorization
 from Py_files.chart import Chart
 from Py_files.database import db
 from Py_files.colors import *
-from datetime import datetime
+from typing import Union
 import pandas as pd
 import csv
 import os
@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
         self.user_id = user_id
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
 
@@ -176,7 +176,8 @@ class MainWindow(QMainWindow):
         # Deleting data
 
         self.lbl_delete_achievement = QLabel(
-            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">Удалить запись:</span></p></body></html>",
+            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+            "Удалить запись:</span></p></body></html>",
             self
         )
         self.lbl_delete_achievement.setGeometry(450, 480, 141, 21)
@@ -206,8 +207,7 @@ class MainWindow(QMainWindow):
         achievements = db.get_achievements(task_name, self.user_id)
         self.tableWidget.setRowCount(len(achievements))
         for row, (date, result, mark, comment) in enumerate(achievements):
-            year, month, day = date.split("-")
-            self.tableWidget.setItem(row, 0, QTableWidgetItem(f"{day}.{month}.{year}"))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem(date.strftime("%d.%m.%Y")))
             self.tableWidget.setItem(row, 1, QTableWidgetItem(str(result)))
             self.tableWidget.setItem(row, 2, QTableWidgetItem(str(mark)))
             self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
@@ -215,7 +215,10 @@ class MainWindow(QMainWindow):
     def open_task(self, task_name) -> None:
         """ Opening a user's sport task """
         result_name, measure = db.get_task(task_name, self.user_id)
-        if measure not in ["Число", "Время"]:
+        # Adding a unit of measurement to the result name (if possible)
+        if result_name is None and measure is None:
+            result_name = "Результат"
+        elif measure not in ["Число", "Время"]:
             result_name = f"{result_name} ({measure})"
         self.resultTableWidget.setText(result_name)
         self.fill_table()
@@ -239,21 +242,26 @@ class MainWindow(QMainWindow):
         """ Deleting a task and everything associated with it """
         task_name = self.CB_tasks.currentText()
         task_names = db.get_task_names(self.user_id)
-        if len(task_names) > 1:  # Если хотя бы одно задание после удаления останется
-            answer = warning_dialog_window.delete_task_or_not(self)
-            if answer:
-                # Удаляем текущее задание
-                self.CB_tasks.removeItem(task_names.index(task_name))
-                db.delete_task(task_name, self.user_id)
-                # Переносим курсор на первое задание и открываем его
-                self.CB_tasks.setCurrentIndex(0)
-                new_task_name = self.CB_tasks.itemText(0)
-                self.open_task(new_task_name)
-        else:
-            warning_dialog_window.last_task_cannot_be_deleted()
+        # If there are no tasks, then an error
+        if not task_name:
+            warning_dialog_window.task_not_created()
+            return
+        answer = warning_dialog_window.delete_task_or_not(self)
+        if answer:
+            # Deleting the current task
+            self.CB_tasks.removeItem(task_names.index(task_name))
+            db.delete_task(task_name, self.user_id)
+            # Moving the cursor to the first task and opening it
+            self.CB_tasks.setCurrentIndex(0)
+            new_task_name = self.CB_tasks.itemText(0)
+            self.open_task(new_task_name)
 
     def add_achievement(self) -> None:
         """ Adding an achievement to the table: result date, result, rating, comment """
+        task_name = self.CB_tasks.currentText()
+        if not task_name:  # If there are no tasks, then an error
+            warning_dialog_window.task_not_created()
+            return
         self.close()
         self.adding_achievement = AddAchievementToTable(self)
         self.adding_achievement.show()
@@ -261,31 +269,38 @@ class MainWindow(QMainWindow):
     def delete_achievement(self) -> None:
         """ Removing an achievement from the table: result date, result, rating, comment """
         achievement_number = self.LE_delete_achievement_by_number.text()
+        # Checking if the entered value is an integer
         try:
-            achievement_number = int(achievement_number) - 1
+            achievement_number = int(achievement_number)
         except ValueError:
-            warning_dialog_window.is_not_number()
+            warning_dialog_window.is_not_integer()
             return
         task_name = self.CB_tasks.currentText()
-        achievements = db.get_achievements(task_name, self.user_id)
-        if (len(achievements) < (achievement_number + 1)) or achievement_number < 0:
+        # Checking whether the entered number could be a number in the spreadsheet table
+        number_of_achievements = db.get_number_of_achievements(task_name, self.user_id)
+        if number_of_achievements < achievement_number or achievement_number <= 0:
             warning_dialog_window.line_number_not_exist()
         else:
-            achievement = achievements[achievement_number]
-            db.delete_achievement(*achievement, task_name, self.user_id)
-            self.fill_table()  # Заполняем таблицу обновленными данными
+            dates = db.get_dates(task_name, self.user_id)
+            db.delete_achievement(dates[achievement_number - 1], task_name, self.user_id)
+            self.LE_delete_achievement_by_number.clear()
+            self.fill_table()
 
-    def get_ex_chart(self) -> Chart:
+    def get_ex_chart(self) -> Union[Chart, None]:
         """ Getting an exemplar of the Chart class, thanks to which you
         can work with the chart: demonstrate, download, and more """
         current_task = self.CB_tasks.currentText()
+        # If there are no tasks, then an error
+        if not current_task:
+            warning_dialog_window.task_not_created()
+            return
+        # If there are no achievements, then there is an error
+        number_of_achievements = db.get_number_of_achievements(current_task, self.user_id)
+        if not number_of_achievements:
+            warning_dialog_window.no_achievements_to_plot()
+            return
+        # We write the name of the result that will be displayed in the graph
         result_name, measure = db.get_task(current_task, self.user_id)
-        achievements = db.get_achievements(current_task, self.user_id)[::-1]
-        dates = []
-        results = []
-        for date, result, mark, comment in achievements:
-            dates.append(datetime.strptime(date, "%Y-%m-%d"))
-            results.append(result)
         if measure == "Число":
             pass
         elif measure == "Время":
@@ -293,6 +308,9 @@ class MainWindow(QMainWindow):
         else:
             result_name = f"{result_name} ({measure})"
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
+        # Getting task results and dates on which they were completed
+        results = db.get_results(current_task, self.user_id, sort_by_date_desc=False)
+        dates = db.get_dates(current_task, self.user_id, sort_by_date_desc=False)
         points = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":
             points = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
@@ -301,16 +319,25 @@ class MainWindow(QMainWindow):
 
     def show_chart(self) -> None:
         """ Demonstration of a graph of the results of the current sports task as a foto """
-        self.chart = self.get_ex_chart()
-        self.chart.show_chart()
+        self.ex_chart = self.get_ex_chart()
+        if self.ex_chart is None:  # For example, an exception occurred
+            return
+        self.ex_chart.show_chart()
 
     def download_chart(self) -> None:
         """ Exporting a graph of the results of the current sports task as a photo """
-        self.chart = self.get_ex_chart()
-        self.chart.download_chart()
+        self.ex_chart = self.get_ex_chart()
+        if self.ex_chart is None:  # For example, an exception occurred
+            return
+        self.ex_chart.download_chart()
 
     def download_table(self) -> None:
         """ Export table data from an application """
+        task_name = self.CB_tasks.currentText()
+        # If there are no tasks, then an error
+        if not task_name:
+            warning_dialog_window.task_not_created()
+            return
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             'Скачать таблицу',
@@ -358,8 +385,8 @@ class MainWindow(QMainWindow):
     def back_to_authorization(self) -> None:
         """ Logging out of your account (proceeding to authorization) """
         self.close()
-        self.authorization = Authorization(MainWindow)
-        self.authorization.show()
+        self.ex_authorization = Authorization(MainWindow)
+        self.ex_authorization.show()
 
 
 if __name__ == '__main__':

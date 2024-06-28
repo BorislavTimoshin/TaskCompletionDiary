@@ -1,19 +1,17 @@
-from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QComboBox
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
-from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
-from PyQt5.QtWidgets import QLineEdit, QFileDialog, QRadioButton, QApplication
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
-from Py_files.about_program import AboutProgram, get_number_of_records_for_plotting
+from PyQt5 import uic
+from Py_files.about_program import AboutProgram
 from Py_files.adding_achievement import AddAchievementToTable
 from Py_files.creating_task import CreateTask
 from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
 from Py_files.chart import Chart
 from Py_files.database import db
-from Py_files.colors import *
 from typing import Union
 import pandas as pd
+import json
 import csv
 import os
 import sys
@@ -25,181 +23,88 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
+with open("Other_files/translations.json", "r", encoding="utf-8") as file:
+    translations = json.load(file)
+
+
 class MainWindow(QMainWindow):
-    def __init__(self, user_id):
+    def __init__(self, user_id, current_language):
         super().__init__()
+        uic.loadUi(f"Design/{current_language}/main.ui", self)
         self.user_id = user_id
+        self.current_language = current_language
         self.initUI()
 
     def initUI(self) -> None:
-        self.setGeometry(550, 200, 800, 700)
-        self.setWindowTitle("Дневник выполнения спортивных задач")
-
-        # Icons for actions in the application Toolbar
-
-        self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
-        self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
-        self.show_chart_action = QAction(QIcon("Images/chart.png"), "Показать график", self)
-        self.program_description_action = QAction(QIcon("Images/information.png"), "Описание программы", self)
-        self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
+        # MenuBar
 
         self.download_chart_action.triggered.connect(self.download_chart)
         self.download_table_action.triggered.connect(self.download_table)
         self.show_chart_action.triggered.connect(self.show_chart)
         self.program_description_action.triggered.connect(self.view_program_description)
         self.program_version_action.triggered.connect(self.view_program_version)
+        self.language_english_action.triggered.connect(self.change_language_to_english)
+        self.language_russian_action.triggered.connect(self.change_language_to_russian)
 
-        # The application Toolbar
+        # Push Buttons
 
-        self.menu_bar = self.menuBar()
-
-        self.menu_file = self.menu_bar.addMenu("Файл")
-        self.menu_file.addAction(self.download_chart_action)
-        self.menu_file.addAction(self.download_table_action)
-
-        self.menu_data = self.menu_bar.addMenu("Данные")
-        self.menu_data.addAction(self.show_chart_action)
-
-        self.menu_about_program = self.menu_bar.addMenu("О программе")
-        self.menu_about_program.addAction(self.program_description_action)
-        self.menu_about_program.addAction(self.program_version_action)
-
-        # Buttons:
-        # 1) creating a sports task
-        # 2) adding an entry to the table
-
-        self.addingDataWidget = QWidget(self)
-        self.addingDataWidget.setGeometry(10, 10, 771, 80)
-
-        self.addingDataHLayout = QHBoxLayout(self.addingDataWidget)
-        self.addingDataHLayout.setContentsMargins(0, 0, 0, 0)
-
-        self.btn_create_task = QPushButton("Создать задачу", self)
-        self.btn_create_task.setGeometry(160, 40, 131, 31)
         self.btn_create_task.clicked.connect(self.create_task)
-        self.btn_create_task.setStyleSheet(light_blue_color)
-        self.addingDataHLayout.addWidget(self.btn_create_task)
-
-        self.btn_add_achievement = QPushButton("Добавить запись", self)
-        self.btn_add_achievement.setGeometry(310, 40, 131, 31)
         self.btn_add_achievement.clicked.connect(self.add_achievement)
-        self.btn_add_achievement.setStyleSheet(light_blue_color)
-        self.addingDataHLayout.addWidget(self.btn_add_achievement)
+        self.btn_delete_task.clicked.connect(self.delete_task)
+        self.btn_delete_achievement.clicked.connect(self.delete_achievement)
+        self.btn_logout.clicked.connect(self.logout)
 
-        # Opening sport task
-
-        self.lbl_open_task = QLabel(
-            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-            "Открыть задачу:</span></p></body></html>",
-            self
-        )
-        self.lbl_open_task.setGeometry(20, 400, 141, 41)
+        # Combo Box (Tasks)
 
         task_names = db.get_task_names(self.user_id)
-        self.CB_tasks = QComboBox(self)
-        self.CB_tasks.setGeometry(180, 410, 201, 22)
         self.CB_tasks.addItems(task_names)
         self.CB_tasks.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.CB_tasks.currentTextChanged.connect(self.open_task)
 
         current_task = self.CB_tasks.currentText()
         result_name, measure = db.get_task(current_task, self.user_id)
+        measure_is_number = translations[self.current_language]["measure"]["number"]
+        measure_is_time = translations[self.current_language]["measure"]["time"]
         if result_name is None and measure is None:
-            result_name = "Результат"
-        elif measure not in ["Число", "Время"]:
+            result_name = translations[self.current_language]["tableWidget"]["defaultResultName"]
+        elif measure not in [measure_is_number, measure_is_time]:
             result_name = f"{result_name} ({measure})"
 
-        # Plotting chart
+        # Plotting
 
-        self.lbl_plotting = QLabel(
-            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-            "Выберите записи для построения графика:</span></p></body></html>",
-            self
-        )
-        self.lbl_plotting.setGeometry(20, 470, 341, 41)
-
-        self.plotting_option_1 = QRadioButton("Первые 30 записей", self)  # FIXME модифицировать выбор записей
-        self.plotting_option_1.setGeometry(20, 520, 141, 21)
         self.plotting_option_1.setChecked(True)
-
-        self.plotting_option_2 = QRadioButton("Первые 60 записей", self)
-        self.plotting_option_2.setGeometry(20, 550, 151, 21)
-
-        self.plotting_option_3 = QRadioButton("Первые 90 записей", self)
-        self.plotting_option_3.setGeometry(20, 580, 141, 21)
-
-        self.plotting_option_4 = QRadioButton("Первые 120 записей", self)
-        self.plotting_option_4.setGeometry(20, 610, 151, 21)
-
-        self.plotting_option_5 = QRadioButton("Первые 150 записей", self)
-        self.plotting_option_5.setGeometry(20, 640, 151, 21)
-
-        self.plotting_option_6 = QRadioButton("Первые 180 записей", self)
-        self.plotting_option_6.setGeometry(210, 520, 151, 21)
-
-        self.plotting_option_7 = QRadioButton("Первые 270 записей", self)
-        self.plotting_option_7.setGeometry(210, 550, 151, 21)
-
-        self.plotting_option_8 = QRadioButton("Первые 365 записей", self)
-        self.plotting_option_8.setGeometry(210, 580, 151, 21)
-
-        self.plotting_option_9 = QRadioButton("Первые 730 записей", self)
-        self.plotting_option_9.setGeometry(210, 610, 151, 21)
-
-        self.plotting_option_10 = QRadioButton("Все записи", self)
-        self.plotting_option_10.setGeometry(210, 640, 101, 21)
 
         # Building a table
 
-        self.tableWidget = QTableWidget(self)
-        self.tableWidget.setGeometry(10, 75, 771, 301)
-        self.tableWidget.setColumnCount(4)
-        self.tableWidget.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.setColumnWidth(1, 160)
 
-        self.dateTableWidget = QTableWidgetItem("Дата")
+        dateTableWidgetText = translations[self.current_language]["tableWidget"]["date"]
+        markTableWidgetText = translations[self.current_language]["tableWidget"]["mark"]
+        commentTableWidgetText = translations[self.current_language]["tableWidget"]["comment"]
+
+        self.dateTableWidget = QTableWidgetItem(dateTableWidgetText)
         self.resultTableWidget = QTableWidgetItem(result_name)
-        self.markTableWidget = QTableWidgetItem("Оценка \nрезультата")
-        self.commentTableWidget = QTableWidgetItem("Комментарий к результату")
+        self.markTableWidget = QTableWidgetItem(markTableWidgetText)
+        self.commentTableWidget = QTableWidgetItem(commentTableWidgetText)
 
         self.tableWidget.setHorizontalHeaderItem(0, self.dateTableWidget)
         self.tableWidget.setHorizontalHeaderItem(1, self.resultTableWidget)
         self.tableWidget.setHorizontalHeaderItem(2, self.markTableWidget)
         self.tableWidget.setHorizontalHeaderItem(3, self.commentTableWidget)
 
-        self.tableWidget.horizontalHeader().setStyleSheet(orange_color)
-        self.tableWidget.verticalHeader().setStyleSheet(gray_blue_color)
-
         self.fill_table()
 
-        # Deleting data
+    def change_language_to_english(self) -> None:
+        """ Translation of the main window text into English """
+        self.current_language = "English"
+        uic.loadUi(f"Design/English/main.ui", self)
+        self.initUI()
 
-        self.lbl_delete_achievement = QLabel(
-            "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-            "Удалить запись:</span></p></body></html>",
-            self
-        )
-        self.lbl_delete_achievement.setGeometry(450, 480, 141, 21)
-
-        self.LE_delete_achievement_by_number = QLineEdit(self)
-        self.LE_delete_achievement_by_number.setPlaceholderText("Введите номер строки, которую хотите удалить")
-        self.LE_delete_achievement_by_number.setGeometry(450, 520, 291, 22)
-
-        self.btn_delete_achievement = QPushButton("Удалить запись", self)
-        self.btn_delete_achievement.setGeometry(450, 560, 187, 28)
-        self.btn_delete_achievement.clicked.connect(self.delete_achievement)
-
-        self.btn_delete_task = QPushButton("Удалить задачу", self)
-        self.btn_delete_task.setGeometry(450, 410, 291, 28)
-        self.btn_delete_task.clicked.connect(self.delete_task)
-
-        # Logout from account
-
-        self.btn_logout = QPushButton("Выход", self)
-        self.btn_logout.setGeometry(450, 620, 291, 48)
-        self.btn_logout.clicked.connect(self.back_to_authorization)
-        self.btn_logout.setStyleSheet(light_blue_color)
+    def change_language_to_russian(self) -> None:
+        """ Translation of the main window text into Russian """
+        self.current_language = "Russian"
+        uic.loadUi(f"Design/Russian/main.ui", self)
+        self.initUI()
 
     def fill_table(self) -> None:
         """ Filling the table with the user's achievements for the current sports task """
@@ -216,9 +121,11 @@ class MainWindow(QMainWindow):
         """ Opening a user's sport task """
         result_name, measure = db.get_task(task_name, self.user_id)
         # Adding a unit of measurement to the result name (if possible)
+        measure_is_number = translations[self.current_language]["measure"]["number"]
+        measure_is_time = translations[self.current_language]["measure"]["time"]
         if result_name is None and measure is None:
-            result_name = "Результат"
-        elif measure not in ["Число", "Время"]:
+            result_name = translations[self.current_language]["tableWidget"]["defaultResultName"]
+        elif measure not in [measure_is_number, measure_is_time]:
             result_name = f"{result_name} ({measure})"
         self.resultTableWidget.setText(result_name)
         self.fill_table()
@@ -235,7 +142,11 @@ class MainWindow(QMainWindow):
 
     def create_task(self) -> None:
         """ Creating a task: task name, result name, unit of measurement """
-        self.creating_task = CreateTask(self)
+        self.creating_task = CreateTask(
+            ex_main_window=self,
+            translations=translations,
+            current_language=self.current_language
+        )
         self.creating_task.show()
 
     def delete_task(self) -> None:
@@ -263,7 +174,11 @@ class MainWindow(QMainWindow):
             warning_dialog_window.task_not_created()
             return
         self.close()
-        self.adding_achievement = AddAchievementToTable(self)
+        self.adding_achievement = AddAchievementToTable(
+            self,
+            translations=translations,
+            current_language=self.current_language
+        )
         self.adding_achievement.show()
 
     def delete_achievement(self) -> None:
@@ -301,9 +216,11 @@ class MainWindow(QMainWindow):
             return
         # We write the name of the result that will be displayed in the graph
         result_name, measure = db.get_task(current_task, self.user_id)
-        if measure == "Число":
+        measure_is_number = translations[self.current_language]["measure"]["number"]
+        measure_is_time = translations[self.current_language]["measure"]["time"]
+        if measure == measure_is_number:
             pass
-        elif measure == "Время":
+        elif measure == measure_is_time:
             result_name = f"{result_name} (с)"
         else:
             result_name = f"{result_name} ({measure})"
@@ -314,7 +231,14 @@ class MainWindow(QMainWindow):
         points = pd.Series(results, index=dates)
         if number_of_records_for_plotting != "all_records":
             points = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
-        chart = Chart(points, current_task, result_name, self)
+        chart = Chart(
+            ex_main_window=self,
+            points=points,
+            task_name=current_task,
+            result_name=result_name,
+            translations=translations,
+            current_language=self.current_language
+        )
         return chart
 
     def show_chart(self) -> None:
@@ -374,23 +298,55 @@ class MainWindow(QMainWindow):
 
     def view_program_description(self) -> None:
         """ View the program description: how to use the application """
-        self.ex_about_program = AboutProgram()
-        self.ex_about_program.program_description()
+        self.ex_about_program = AboutProgram(
+            translations=translations,
+            current_language=self.current_language
+        )
+        self.ex_about_program.show_program_description()
 
     def view_program_version(self) -> None:
         """ View the program version: for developers """
-        self.ex_about_program = AboutProgram()
-        self.ex_about_program.program_version()
+        self.ex_about_program = AboutProgram(
+            translations=translations,
+            current_language=self.current_language
+        )
+        self.ex_about_program.show_program_version()
 
-    def back_to_authorization(self) -> None:
+    def logout(self) -> None:
         """ Logging out of your account (proceeding to authorization) """
         self.close()
-        self.ex_authorization = Authorization(MainWindow)
+        self.ex_authorization = Authorization(
+            main_window=MainWindow,
+            translations=translations,
+            current_language=self.current_language
+        )
         self.ex_authorization.show()
 
 
+def get_number_of_records_for_plotting(parent: MainWindow):
+    if parent.plotting_option_1.isChecked():
+        return 30
+    if parent.plotting_option_2.isChecked():
+        return 60
+    if parent.plotting_option_3.isChecked():
+        return 90
+    if parent.plotting_option_4.isChecked():
+        return 120
+    if parent.plotting_option_5.isChecked():
+        return 150
+    if parent.plotting_option_6.isChecked():
+        return 180
+    if parent.plotting_option_7.isChecked():
+        return 270
+    if parent.plotting_option_8.isChecked():
+        return 365
+    if parent.plotting_option_9.isChecked():
+        return 730
+    return "all_records"
+
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    authorization = Authorization(MainWindow)
+    application = QApplication(sys.argv)
+    authorization = Authorization(MainWindow, translations)
     authorization.show()
-    sys.exit(app.exec())
+    sys.exit(application.exec())

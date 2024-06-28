@@ -1,0 +1,243 @@
+{
+  "English": {
+    "applicationName": "Diary of completing sports tasks",
+    "windowTitle": {
+      "warnings": {
+        "lenTaskNameIs0": "Error in task name",
+        "lenTaskNameMore30": "Error in task name",
+        "lenResultNameIs0": "Error in result name",
+        "lenResultNameMore15": "Error in result name",
+        "taskAlreadyExists": "Error in task name",
+        "isNotInteger": "Error in specifying an integer",
+        "lineNumberNotExist": "Error in writing line deletion number",
+        "noAchievementsToPlot": "Error in plotting",
+        "taskNotCreated": "Error in task creation",
+        "deleteTaskOrNot": "Deleting a task",
+        "replaceWithSimilarDate": "Error in date"
+      },
+      "aboutProgram": "About the program",
+      "chart": "Results chart",
+      "addingEntry": "Adding an entry",
+      "creatingTask": "Creating a task",
+      "authorization": "Authorization",
+      "login": "Login",
+      "registration": "Registration"
+    },
+    "measure": {
+      "number": "Number",
+      "kilogram": "kg",
+      "centimeter": "cm",
+      "meter": "m",
+      "kilometer": "km",
+      "meterPerSecond": "m/s",
+      "kilometerPerHour": "km/h",
+      "time": "Time"
+    },
+    "menuBar": {
+      "mainWindow": {
+        "file": "File",
+        "data": "Data",
+        "aboutProgram": "About the program"
+      }
+    },
+    "plotting": {
+      "option_1": "First 30 entries",
+      "option_2": "First 60 entries",
+      "option_3": "First 90 entries",
+      "option_4": "First 120 entries",
+      "option_5": "First 150 entries",
+      "option_6": "First 180 entries",
+      "option_7": "First 270 entries",
+      "option_8": "First 365 entries",
+      "option_9": "First 730 entries",
+      "option_10": "All entries"
+    },
+    "tableWidget": {
+      "date": "Date",
+      "defaultResultName": "Result",
+      "mark": "Result score",
+      "comment": "Comment on the result"
+    },
+    "action": {
+      "downloadChart": "Download chart",
+      "downloadTable": "Download table",
+      "showChart": "Show chart",
+      "programDescription": "Program description",
+      "programVersion": "Program version"
+    },
+    "btn": {
+      "createTask": "Create a task",
+      "addAchievement": "Add Entry",
+      "deleteAchievement": "Delete Entry",
+      "deleteTask": "Delete task",
+      "logout": "Logout",
+      "login": "Login",
+      "registration": "Registration",
+      "back": "Back",
+      "registrationAndLogin": "Register and login",
+      "ok": "OK",
+      "cancel": "Cancel"
+    },
+    "lbl": {
+      "indicate": {
+        "date": "Specify the date of completion of the sports task:",
+        "result": "Specify the result:",
+        "mark": "Indicate the score of the result:",
+        "comment": "Write a comment on the result (Optional):"
+      },
+      "aboutAuthorization": "Do you want to login or register?",
+      "authorization": "Account authorization",
+      "registration": "Account registration",
+      "aboutLogin": "Enter your login:",
+      "aboutPassword": "Enter your password:",
+      "wrongNameOrPassword": "Incorrect login or password",
+      "loginAlreadyExists": "A user with this login already exists",
+      "openTask": "Open task:",
+      "plotting": "Select records to plot:",
+      "deleteAchievement": "Delete entry:"
+    },
+    "title": {
+      "taskName": "Task name (max. 20 characters)",
+      "resultName": "Name of the result (max. 15 characters)",
+      "unitOfMeasure": "Unit of measurement of the result"
+    },
+    "placeholderText": {
+      "deletingAchievement": "Enter the line number you want to delete",
+      "taskName": "For example, jogging",
+      "resultName": "For example, distance"
+    },
+    "warnings": {
+      "lenTaskNameIs0": "Task name cannot be empty",
+      "lenTaskNameMore30": "The length of the task name must be no more than 30 characters",
+      "lenResultNameIs0": "Result name cannot be empty",
+      "lenResultNameMore15": "The length of the result name must be no more than 15 characters",
+      "taskAlreadyExists": "A task with the same name already exists",
+      "isNotInteger": "The value entered is not an integer",
+      "lineNumberNotExist": "The given line number does not exist",
+      "taskNotCreated": "Task not created",
+      "deleteTaskOrNot": "Do you want to delete the task? Restoration will not be possible",
+      "replaceWithSimilarDate": "A result with the same date is already in the table. Do you want to replace?"
+    }
+  },
+  "Russian": {
+    "applicationName": "Дневник выполнения спортивных задач",
+    "windowTitle": {
+      "warnings": {
+        "lenTaskNameIs0": "Ошибка в названии задачи",
+        "lenTaskNameMore30": "Ошибка в названии задачи",
+        "lenResultNameIs0": "Ошибка в названии результата",
+        "lenResultNameMore15": "Ошибка в названии результата",
+        "taskAlreadyExists": "Ошибка в названии задачи",
+        "isNotInteger": "Ошибка в указании целого числа",
+        "lineNumberNotExist": "Ошибка в написании номера удаления строки",
+        "noAchievementsToPlot": "Ошибка в построении графика",
+        "taskNotCreated": "Ошибка в создании задачи",
+        "deleteTaskOrNot": "Удаление задачи",
+        "replaceWithSimilarDate": "Ошибка в указании даты"
+      },
+      "main": "Дневник выполнения спортивных задач",
+      "aboutProgram": "О программе",
+      "chart": "График результатов",
+      "addingEntry": "Добавление записи",
+      "creatingTask": "Создание задачи",
+      "authorization": "Авторизация",
+      "login": "Вход в аккаунт",
+      "registration": "Регистрация"
+    },
+    "measure": {
+      "number": "Число",
+      "kilogram": "кг",
+      "centimeter": "см",
+      "meter": "м",
+      "kilometer": "км",
+      "meterPerSecond": "м/с",
+      "kilometerPerHour": "км/ч",
+      "time": "Время"
+    },
+    "menuBar": {
+      "mainWindow": {
+        "file": "Файл",
+        "data": "Данные",
+        "aboutProgram": "О программе"
+      }
+    },
+    "plotting": {
+      "option_1": "Первые 30 записей",
+      "option_2": "Первые 60 записей",
+      "option_3": "Первые 90 записей",
+      "option_4": "Первые 120 записей",
+      "option_5": "Первые 150 записей",
+      "option_6": "Первые 180 записей",
+      "option_7": "Первые 270 записей",
+      "option_8": "Первые 365 записей",
+      "option_9": "Первые 730 записей",
+      "option_10": "Все записи"
+    },
+    "tableWidget": {
+      "date": "Дата",
+      "defaultResultName": "Результат",
+      "mark": "Оценка \nрезультата",
+      "comment": "Комментарий к результату"
+    },
+    "action": {
+      "downloadChart": "Скачать график",
+      "downloadTable": "Скачать таблицу",
+      "showChart": "Показать график",
+      "programDescription": "Описание программы",
+      "programVersion": "Версия программы"
+    },
+    "btn": {
+      "createTask": "Создать задачу",
+      "addAchievement": "Добавить запись",
+      "deleteAchievement": "Удалить запись",
+      "deleteTask": "Удалить задачу",
+      "logout": "Выход",
+      "login": "Войти",
+      "registration": "Регистрация",
+      "back": "Вернуться",
+      "registrationAndLogin": "Зарегистрироваться и войти",
+      "ok": "Ок",
+      "cancel": "Отмена"
+    },
+    "lbl": {
+      "indicate": {
+        "date": "Укажите дату выполнения спортивной задачи:",
+        "result": "Укажите результат:",
+        "mark": "Укажите оценку результата:",
+        "comment": "Напишите комментарий к результату (По желанию):"
+      },
+      "aboutAuthorization": "Хотите войти или зарегистрироваться?",
+      "authorization": "Авторизация аккаунта",
+      "registration": "Регистрация аккаунта",
+      "aboutLogin": "Введите логин:",
+      "aboutPassword": "Введите пароль:",
+      "wrongNameOrPassword": "Неверный логин или пароль",
+      "loginAlreadyExists": "Пользователь с таким логином уже существует",
+      "openTask": "Открыть задачу:",
+      "plotting": "Выберите записи для построения графика:",
+      "deleteAchievement": "Удалить запись:"
+    },
+    "title": {
+      "taskName": "Название задачи (не более 20 символов)",
+      "resultName": "Название результата (не более 15 символов)",
+      "unitOfMeasure": "Единица измерения результата"
+    },
+    "placeholderText": {
+      "deletingAchievement": "Введите номер строки, которую хотите удалить",
+      "taskName": "Например, бег по утрам",
+      "resultName": "Например, расстояние"
+    },
+    "warnings": {
+      "lenTaskNameIs0": "Название задачи не может быть пустым",
+      "lenTaskNameMore30": "Длина названия задачи должна быть не более 30 символов",
+      "lenResultNameIs0": "Название результата не может быть пустым",
+      "lenResultNameMore15": "Длина названия результата должна быть не более 15 символов",
+      "taskAlreadyExists": "Задание с таким именем уже существует",
+      "isNotInteger": "Введенное значение не является целым числом",
+      "lineNumberNotExist": "Номера данной строки не существует              ",
+      "taskNotCreated": "Задача не создана              ",
+      "deleteTaskOrNot": "Хотите удалить задачу? Восстановление будет невозможно",
+      "replaceWithSimilarDate": "Результат с такой датой уже есть в таблице. Хотите заменить?"
+    }
+  }
+}

@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>main_window</class>
+ <widget class="QMainWindow" name="main_window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>729</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Diary of completing sports tasks</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>45</y>
+      <width>771</width>
+      <height>331</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>771</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>771</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QHeaderView::section:horizontal {
+    background-color: #FFC973; 
+}
+
+QHeaderView::section:vertical {
+    background-color: #E6E6FA;
+}
+</string>
+    </property>
+    <property name="sizeAdjustPolicy">
+     <enum>QAbstractScrollArea::AdjustToContents</enum>
+    </property>
+    <attribute name="horizontalHeaderStretchLastSection">
+     <bool>true</bool>
+    </attribute>
+    <row>
+     <property name="text">
+      <string/>
+     </property>
+    </row>
+    <column>
+     <property name="text">
+      <string>Date</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Result</string>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Result score</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Comment on the result</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="lbl_open_task">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>400</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;Open task:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="CB_tasks">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>410</y>
+      <width>201</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_delete_task">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>410</y>
+      <width>331</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Delete task</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="LE_delete_achievement_by_number">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>520</y>
+      <width>251</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>Enter the line number you want to delete</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_delete_achievement_text">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>480</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;Delete entry:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_delete_achievement">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>560</y>
+      <width>187</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Delete Entry</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>580</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 90 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>550</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 60 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_8">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>580</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 365 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_9">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>610</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 730 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_4">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>610</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 120 entries</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_plotting">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>470</y>
+      <width>171</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;Select records to plot:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_7">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>550</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 270 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_10">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>640</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>All entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_1">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>520</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 30 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_5">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>640</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 150 entries</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="plotting_option_6">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>520</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>First 180 entries</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_logout">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>620</y>
+      <width>291</width>
+      <height>48</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: lightblue;</string>
+    </property>
+    <property name="text">
+     <string>Logout</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>771</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="addingDataHLayout">
+     <item>
+      <widget class="QPushButton" name="btn_create_task">
+       <property name="styleSheet">
+        <string notr="true">background-color: lightblue;</string>
+       </property>
+       <property name="text">
+        <string>Create a task</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_add_achievement">
+       <property name="styleSheet">
+        <string notr="true">background-color: lightblue;</string>
+       </property>
+       <property name="text">
+        <string>Add Entry</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <zorder>lbl_open_task</zorder>
+   <zorder>CB_tasks</zorder>
+   <zorder>btn_delete_task</zorder>
+   <zorder>LE_delete_achievement_by_number</zorder>
+   <zorder>lbl_delete_achievement_text</zorder>
+   <zorder>btn_delete_achievement</zorder>
+   <zorder>plotting_option_3</zorder>
+   <zorder>plotting_option_2</zorder>
+   <zorder>plotting_option_8</zorder>
+   <zorder>plotting_option_9</zorder>
+   <zorder>plotting_option_4</zorder>
+   <zorder>lbl_plotting</zorder>
+   <zorder>plotting_option_7</zorder>
+   <zorder>plotting_option_10</zorder>
+   <zorder>plotting_option_1</zorder>
+   <zorder>plotting_option_5</zorder>
+   <zorder>plotting_option_6</zorder>
+   <zorder>btn_logout</zorder>
+   <zorder>tableWidget</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuDownload">
+     <property name="title">
+      <string>Download</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>../../Icons/download.svg</normaloff>../../Icons/download.svg</iconset>
+     </property>
+     <addaction name="download_chart_action"/>
+     <addaction name="download_table_action"/>
+    </widget>
+    <addaction name="menuDownload"/>
+   </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>Data</string>
+    </property>
+    <addaction name="show_chart_action"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout_the_program">
+    <property name="title">
+     <string>About the program</string>
+    </property>
+    <addaction name="program_description_action"/>
+    <addaction name="program_version_action"/>
+   </widget>
+   <widget class="QMenu" name="menulanguage">
+    <property name="title">
+     <string>Language</string>
+    </property>
+    <addaction name="language_english_action"/>
+    <addaction name="language_russian_action"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuData"/>
+   <addaction name="menuAbout_the_program"/>
+   <addaction name="menulanguage"/>
+  </widget>
+  <action name="actionChart">
+   <property name="text">
+    <string>Chart</string>
+   </property>
+  </action>
+  <action name="actionTable">
+   <property name="text">
+    <string>Table</string>
+   </property>
+  </action>
+  <action name="show_chart_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/chart.png</normaloff>../../Icons/chart.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show chart</string>
+   </property>
+  </action>
+  <action name="program_description_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/information.svg</normaloff>../../Icons/information.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Program description</string>
+   </property>
+  </action>
+  <action name="actiondescription">
+   <property name="text">
+    <string>description</string>
+   </property>
+  </action>
+  <action name="program_version_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/version.jpg</normaloff>../../Icons/version.jpg</iconset>
+   </property>
+   <property name="text">
+    <string>Program version</string>
+   </property>
+  </action>
+  <action name="language_english_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/english.png</normaloff>../../Icons/english.png</iconset>
+   </property>
+   <property name="text">
+    <string>English</string>
+   </property>
+  </action>
+  <action name="language_russian_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/russian.png</normaloff>../../Icons/russian.png</iconset>
+   </property>
+   <property name="text">
+    <string>Russian</string>
+   </property>
+  </action>
+  <action name="download_chart_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/chart.png</normaloff>../../Icons/chart.png</iconset>
+   </property>
+   <property name="text">
+    <string>Chart</string>
+   </property>
+  </action>
+  <action name="download_table_action">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../Icons/table.png</normaloff>../../Icons/table.png</iconset>
+   </property>
+   <property name="text">
+    <string>Table</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,47 +1,37 @@
-from PyQt5.QtWidgets import QLineEdit, QComboBox, QFormLayout
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from PyQt5.QtGui import QCloseEvent
+from PyQt5 import uic
 from Py_files.warnings import warning_dialog_window
 from Py_files.database import db
 
 
 class CreateTask(QDialog):
-    def __init__(self, ex_main_window=None):
+    def __init__(self, ex_main_window, translations: dict, current_language: str):
         super().__init__()
+        uic.loadUi(f"Design/{current_language}/creating_task.ui", self)
         self.ex_main_window = ex_main_window
+        self.user_id = self.ex_main_window.user_id
+        self.translations = translations
+        self.current_language = current_language
         self.initUI()
 
     def initUI(self) -> None:
-        self.setWindowTitle("Создание задачи")
+        # Processing Ok and Cancel buttons
 
-        task_creation_btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        creatingTaskFormLayout = QFormLayout(self)
+        self.task_creation_dialog_btns.accepted.connect(self.accept)
+        self.task_creation_dialog_btns.rejected.connect(self.cancel)
 
-        self.title_task_name = "Название задачи (не более 20 символов)"
-        self.LE_task_name = QLineEdit(self)
-        self.LE_task_name.setPlaceholderText("Например, бег по утрам")
-        creatingTaskFormLayout.addRow(self.title_task_name, self.LE_task_name)
+        ok_button_text = self.translations[self.current_language]["btn"]["ok"]
+        cancel_button_text = self.translations[self.current_language]["btn"]["cancel"]
 
-        self.title_result_name = "Название результата (не более 15 символов)"
-        self.LE_result_name = QLineEdit(self)
-        self.LE_result_name.setPlaceholderText("Например, расстояние")
-        creatingTaskFormLayout.addRow(self.title_result_name, self.LE_result_name)
+        self.task_creation_dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
+        self.task_creation_dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
 
-        self.title_unit_of_measure = "Единица измерения результата"
-        self.CB_measure = QComboBox(self)
-        measures = ["Число", "кг", "см", "м", "км", "м/с", "км/ч", "Время"]
-        self.CB_measure.addItems(measures)
-        creatingTaskFormLayout.addRow(self.title_unit_of_measure, self.CB_measure)
-
-        creatingTaskFormLayout.addWidget(task_creation_btns)
-        task_creation_btns.accepted.connect(self.ok)
-        task_creation_btns.rejected.connect(self.cancel)
-
-    def ok(self) -> None:
+    def accept(self) -> None:
         """ Processing data to create a task """
         task_name = self.LE_task_name.text()
         result_name = self.LE_result_name.text()
-        measure = self.CB_measure.currentText()
+        measure = self.CB_measures.currentText()
         # Checking for empty task name and result name
         if not task_name:
             warning_dialog_window.len_task_name_is_0()
@@ -52,13 +42,15 @@ class CreateTask(QDialog):
         # Checking the task name and result name for valid length
         if len(task_name) <= 30:
             if len(result_name) <= 15:
-                task_names = db.get_task_names(self.ex_main_window.user_id)
+                task_names = db.get_task_names(self.user_id)
                 if task_name in task_names:  # Checking the existence of a task with the same name
                     warning_dialog_window.task_already_exists()
                 else:
-                    db.add_task(task_name, result_name, measure, self.ex_main_window.user_id)
+                    db.add_task(task_name, result_name, measure, self.user_id)
                     # Adding a unit of measurement to the result name (if possible)
-                    if measure not in ["Число", "Время"]:
+                    measure_is_number = self.translations[self.current_language]["measure"]["number"]
+                    measure_is_time = self.translations[self.current_language]["measure"]["time"]
+                    if measure not in [measure_is_number, measure_is_time]:
                         result_name = f"{result_name} ({measure})"
                     # Adding task data to the application
                     self.ex_main_window.CB_tasks.addItem(task_name)

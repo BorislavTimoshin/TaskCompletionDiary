@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>creating_task</class>
+ <widget class="QDialog" name="creating_task">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>495</width>
+    <height>141</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Создание задачи</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="title_task_name">
+     <property name="text">
+      <string>Название задачи (не более 20 символов)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="LE_task_name">
+     <property name="placeholderText">
+      <string>Например, бег по утрам</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="title_result_name">
+     <property name="text">
+      <string>Название результата (не более 15 символов)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="LE_result_name">
+     <property name="placeholderText">
+      <string>Например, расстояние</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="title_unit_of_measure">
+     <property name="text">
+      <string>Единица измерения результата</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="CB_measures">
+     <item>
+      <property name="text">
+       <string>Число</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>кг</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>см</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>м</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>км</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>м/с</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>км/ч</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Время</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="task_creation_dialog_btns">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

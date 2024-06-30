@@ -407,14 +407,14 @@ QHeaderView::section:vertical {
     </property>
     <addaction name="show_chart_action"/>
    </widget>
-   <widget class="QMenu" name="menuAbout_the_program">
+   <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>About the program</string>
+     <string>Help</string>
     </property>
-    <addaction name="program_description_action"/>
-    <addaction name="program_version_action"/>
+    <addaction name="about_action"/>
+    <addaction name="version_action"/>
    </widget>
-   <widget class="QMenu" name="menulanguage">
+   <widget class="QMenu" name="menuLanguage">
     <property name="title">
      <string>Language</string>
     </property>
@@ -423,8 +423,8 @@ QHeaderView::section:vertical {
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
-   <addaction name="menuAbout_the_program"/>
-   <addaction name="menulanguage"/>
+   <addaction name="menuLanguage"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionChart">
    <property name="text">
@@ -445,13 +445,13 @@ QHeaderView::section:vertical {
     <string>Show chart</string>
    </property>
   </action>
-  <action name="program_description_action">
+  <action name="about_action">
    <property name="icon">
     <iconset>
      <normaloff>../../Icons/information.svg</normaloff>../../Icons/information.svg</iconset>
    </property>
    <property name="text">
-    <string>Program description</string>
+    <string>About</string>
    </property>
   </action>
   <action name="actiondescription">
@@ -459,13 +459,13 @@ QHeaderView::section:vertical {
     <string>description</string>
    </property>
   </action>
-  <action name="program_version_action">
+  <action name="version_action">
    <property name="icon">
     <iconset>
      <normaloff>../../Icons/version.jpg</normaloff>../../Icons/version.jpg</iconset>
    </property>
    <property name="text">
-    <string>Program version</string>
+    <string>Version</string>
    </property>
   </action>
   <action name="language_english_action">

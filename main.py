@@ -2,11 +2,11 @@ from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
-from Py_files.about_program import AboutProgram
 from Py_files.adding_achievement import AddAchievementToTable
-from Py_files.creating_task import CreateTask
 from Py_files.warnings import warning_dialog_window
 from Py_files.authorization import Authorization
+from Py_files.creating_task import CreateTask
+from Py_files.help import Help
 from Py_files.chart import Chart
 from Py_files.database import db
 from typing import Union
@@ -41,8 +41,8 @@ class MainWindow(QMainWindow):
         self.download_chart_action.triggered.connect(self.download_chart)
         self.download_table_action.triggered.connect(self.download_table)
         self.show_chart_action.triggered.connect(self.show_chart)
-        self.program_description_action.triggered.connect(self.view_program_description)
-        self.program_version_action.triggered.connect(self.view_program_version)
+        self.about_action.triggered.connect(self.view_about)
+        self.version_action.triggered.connect(self.view_version)
         self.language_english_action.triggered.connect(self.change_language_to_english)
         self.language_russian_action.triggered.connect(self.change_language_to_russian)
 
@@ -175,7 +175,7 @@ class MainWindow(QMainWindow):
             return
         self.close()
         self.adding_achievement = AddAchievementToTable(
-            self,
+            ex_main_window=self,
             translations=translations,
             current_language=self.current_language
         )
@@ -296,21 +296,15 @@ class MainWindow(QMainWindow):
             excel_file._save()
             os.remove(csv_path)
 
-    def view_program_description(self) -> None:
+    def view_about(self) -> None:
         """ View the program description: how to use the application """
-        self.ex_about_program = AboutProgram(
-            translations=translations,
-            current_language=self.current_language
-        )
-        self.ex_about_program.show_program_description()
+        self.ex_about_program = Help(translations, self.current_language)
+        self.ex_about_program.show_about()
 
-    def view_program_version(self) -> None:
+    def view_version(self) -> None:
         """ View the program version: for developers """
-        self.ex_about_program = AboutProgram(
-            translations=translations,
-            current_language=self.current_language
-        )
-        self.ex_about_program.show_program_version()
+        self.ex_about_program = Help(translations, self.current_language)
+        self.ex_about_program.show_version()
 
     def logout(self) -> None:
         """ Logging out of your account (proceeding to authorization) """

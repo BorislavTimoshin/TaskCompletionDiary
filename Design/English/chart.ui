@@ -6,17 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>663</width>
     <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Results chart</string>
+   <string>Chart</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QWidget" name="chartWidget" native="true"/>
+     <layout class="QVBoxLayout" name="chartWidgetLayout"/>
     </item>
    </layout>
   </widget>

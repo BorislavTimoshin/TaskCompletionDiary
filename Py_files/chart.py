@@ -23,8 +23,8 @@ class Chart(QMainWindow):
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
 
-        # Adding a chart to chartWidget
-        self.centralwidget.chartWidget.layout().addWidget(self.canvas)  # FIXME
+        # Adding a chart to chartWidgetLayout
+        self.chartWidgetLayout.addWidget(self.canvas)
 
     def draw_chart(self) -> None:
         """ Creating a chart and drawing it """

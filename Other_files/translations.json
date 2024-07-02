@@ -2,17 +2,19 @@
   "English": {
     "applicationName": "Diary of completing sports tasks",
     "windowTitle": {
-      "warnings": {
-        "lenTaskNameIs0": "Error in task name",
+      "errors": {
+        "taskNameCannotBeEmpty": "Error in task name",
         "lenTaskNameMore30": "Error in task name",
-        "lenResultNameIs0": "Error in result name",
+        "resultNameCannotBeEmpty": "Error in result name",
         "lenResultNameMore15": "Error in result name",
         "taskAlreadyExists": "Error in task name",
         "isNotInteger": "Error in specifying an integer",
         "lineNumberNotExist": "Error in writing line deletion number",
         "noAchievementsToPlot": "Error in plotting",
-        "taskNotCreated": "Error in task creation",
-        "deleteTaskOrNot": "Deleting a task",
+        "taskNotCreated": "Error in task creation"
+      },
+      "questions": {
+        "shouldDeleteTask": "Deleting a task",
         "replaceWithSimilarDate": "Error in date"
       },
       "aboutProgram": "About the program",
@@ -76,7 +78,9 @@
       "back": "Back",
       "registrationAndLogin": "Register and login",
       "ok": "OK",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "yes": "Yes",
+      "no": "No"
     },
     "lbl": {
       "indicate": {
@@ -106,33 +110,37 @@
       "taskName": "For example, jogging",
       "resultName": "For example, distance"
     },
-    "warnings": {
-      "lenTaskNameIs0": "Task name cannot be empty",
+    "errors": {
+      "taskNameCannotBeEmpty": "Task name cannot be empty",
       "lenTaskNameMore30": "The length of the task name must be no more than 30 characters",
-      "lenResultNameIs0": "Result name cannot be empty",
+      "resultNameCannotBeEmpty": "Result name cannot be empty",
       "lenResultNameMore15": "The length of the result name must be no more than 15 characters",
       "taskAlreadyExists": "A task with the same name already exists",
       "isNotInteger": "The value entered is not an integer",
       "lineNumberNotExist": "The given line number does not exist",
-      "taskNotCreated": "Task not created",
-      "deleteTaskOrNot": "Do you want to delete the task? Restoration will not be possible",
+      "taskNotCreated": "Task not created"
+    },
+    "questions": {
+      "shouldDeleteTask": "Do you want to delete the task? Restoration will not be possible",
       "replaceWithSimilarDate": "A result with the same date is already in the table. Do you want to replace?"
     }
   },
   "Russian": {
     "applicationName": "Дневник выполнения спортивных задач",
     "windowTitle": {
-      "warnings": {
-        "lenTaskNameIs0": "Ошибка в названии задачи",
+      "errors": {
+        "taskNameCannotBeEmpty": "Ошибка в названии задачи",
         "lenTaskNameMore30": "Ошибка в названии задачи",
-        "lenResultNameIs0": "Ошибка в названии результата",
+        "resultNameCannotBeEmpty": "Ошибка в названии результата",
         "lenResultNameMore15": "Ошибка в названии результата",
         "taskAlreadyExists": "Ошибка в названии задачи",
         "isNotInteger": "Ошибка в указании целого числа",
         "lineNumberNotExist": "Ошибка в написании номера удаления строки",
         "noAchievementsToPlot": "Ошибка в построении графика",
-        "taskNotCreated": "Ошибка в создании задачи",
-        "deleteTaskOrNot": "Удаление задачи",
+        "taskNotCreated": "Ошибка в создании задачи"
+      },
+      "questions": {
+        "shouldDeleteTask": "Удаление задачи",
         "replaceWithSimilarDate": "Ошибка в указании даты"
       },
       "main": "Дневник выполнения спортивных задач",
@@ -197,7 +205,9 @@
       "back": "Вернуться",
       "registrationAndLogin": "Зарегистрироваться и войти",
       "ok": "Ок",
-      "cancel": "Отмена"
+      "cancel": "Отмена",
+      "yes": "Да",
+      "no": "Нет"
     },
     "lbl": {
       "indicate": {
@@ -227,16 +237,18 @@
       "taskName": "Например, бег по утрам",
       "resultName": "Например, расстояние"
     },
-    "warnings": {
-      "lenTaskNameIs0": "Название задачи не может быть пустым",
+    "errors": {
+      "taskNameCannotBeEmpty": "Название задачи не может быть пустым",
       "lenTaskNameMore30": "Длина названия задачи должна быть не более 30 символов",
-      "lenResultNameIs0": "Название результата не может быть пустым",
+      "resultNameCannotBeEmpty": "Название результата не может быть пустым",
       "lenResultNameMore15": "Длина названия результата должна быть не более 15 символов",
       "taskAlreadyExists": "Задание с таким именем уже существует",
       "isNotInteger": "Введенное значение не является целым числом",
       "lineNumberNotExist": "Номера данной строки не существует              ",
-      "taskNotCreated": "Задача не создана              ",
-      "deleteTaskOrNot": "Хотите удалить задачу? Восстановление будет невозможно",
+      "taskNotCreated": "Задача не создана              "
+    },
+    "questions": {
+      "shouldDeleteTask": "Хотите удалить задачу? Восстановление будет невозможно",
       "replaceWithSimilarDate": "Результат с такой датой уже есть в таблице. Хотите заменить?"
     }
   }

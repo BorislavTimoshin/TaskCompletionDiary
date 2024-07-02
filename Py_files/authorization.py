@@ -6,7 +6,7 @@ import sys
 
 
 class Authorization(QMainWindow):
-    def __init__(self, main_window, translations: dict, current_language="English"):
+    def __init__(self, main_window, translations: dict, current_language: str):
         super().__init__()
         uic.loadUi(f"Design/{current_language}/authorization.ui", self)
         self.main_window = main_window

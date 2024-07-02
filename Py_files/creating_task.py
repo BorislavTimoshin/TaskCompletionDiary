@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from PyQt5.QtGui import QCloseEvent
 from PyQt5 import uic
-from Py_files.warnings import warning_dialog_window
+from Py_files.warnings import warnings
 from Py_files.database import db
 
 
@@ -34,17 +34,17 @@ class CreateTask(QDialog):
         measure = self.CB_measures.currentText()
         # Checking for empty task name and result name
         if not task_name:
-            warning_dialog_window.len_task_name_is_0()
+            warnings.cause_error("taskNameCannotBeEmpty", self.current_language)
             return
         if not result_name:
-            warning_dialog_window.len_result_name_is_0()
+            warnings.cause_error("resultNameCannotBeEmpty", self.current_language)
             return
         # Checking the task name and result name for valid length
         if len(task_name) <= 30:
             if len(result_name) <= 15:
                 task_names = db.get_task_names(self.user_id)
                 if task_name in task_names:  # Checking the existence of a task with the same name
-                    warning_dialog_window.task_already_exists()
+                    warnings.cause_error("taskAlreadyExists", self.current_language)
                 else:
                     db.add_task(task_name, result_name, measure, self.user_id)
                     # Adding a unit of measurement to the result name (if possible)
@@ -59,9 +59,9 @@ class CreateTask(QDialog):
                     # Closing the dialog box (CreateTask)
                     self.reject()
             else:
-                warning_dialog_window.len_title_result_more_15()
+                warnings.cause_error("lenResultNameMore15", self.current_language)
         else:
-            warning_dialog_window.len_task_name_more_30()
+            warnings.cause_error("lenTaskNameMore30", self.current_language)
 
     def cancel(self) -> None:
         """ Closing the dialog box (CreateTask) by clicking on "cancel" """

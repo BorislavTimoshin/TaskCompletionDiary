@@ -1,133 +1,60 @@
 from PyQt5.QtWidgets import QMessageBox
+import json
 
-
-# Было бы прикольно добавить срез данных, допустим, за предыдущие 7 дней по всем задачам (посмотреть текущую форму спортсмена)
-# Было бы прикольно добавить возможность просмотреть комментарий пошире, а то места мало
-# Было бы прикольно добавить возможность изменять дату, результат, оценку, комментарий прямо из таблицы
-# Сделать иконку для .exe файла
-# Заменить на Скачать -> График, Таблица
-# Надо подумать, как модифицировать график, когда данных много, так как множество жирных точек выглядит некрасиво
-# TODO добавить обработку реультата с единицей измерения ВРЕМЯ
-# Добавить комментарии в warnings и initUI везде
-# Добавить возможность изменить имя текущей задачи, название результата
-# Добавить вход по кнопке Enter
-# Можно добавить много иконок: к дате в таблице, к удалениям и т.д.
-# Переписать логику .get_ex_chart() в файл chart.py
-# Изменить добавление записи наподобие того, как у чела в видео по PySide
-# Текст уходит из LineEdit при смене языка
-# Добавить темные и светлые темы
-# Определять язык при запуске ппрограммы в зависимости от системного региона, чтобы не был английский, когда ты русский
+with open("Other_files/translations.json", "r", encoding="utf-8") as file:
+    translations = json.load(file)
 
 
 class WarningDialogWindow:
     @staticmethod
-    def len_task_name_is_0():
+    def cause_error(error_name: str, language: str) -> None:
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Название задачи не может быть пустым")
-        msg.setWindowTitle("Ошибка в названии задачи")
+
+        # Processing error text
+
+        error_text = translations[language]["warnings"][error_name]
+        window_title = translations[language]["windowTitle"]["warnings"][error_name]
+        msg.setText(error_text)
+        msg.setWindowTitle(window_title)
+
+        # Processing Ok and Cancel buttons
+
+        ok_button_text = translations[language]["btn"]["ok"]
+        cancel_button_text = translations[language]["btn"]["cancel"]
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.button(QMessageBox.Ok).setText(ok_button_text)
+        msg.button(QMessageBox.Cancel).setText(cancel_button_text)
+
         msg.exec()
 
     @staticmethod
-    def len_task_name_more_30():
+    def ask_question(parent, question_name: str, language: str) -> bool:
         msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Длина названия задачи должна быть не более 30 символов")
-        msg.setWindowTitle("Ошибка в названии задачи")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
 
-    @staticmethod
-    def len_result_name_is_0():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Название результата не может быть пустым")
-        msg.setWindowTitle("Ошибка в названии результата")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
+        # Processing question text
 
-    @staticmethod
-    def len_result_name_more_15():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Длина названия результата должна быть не более 15 символов")
-        msg.setWindowTitle("Ошибка в названии результата")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def task_already_exists():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Задание с таким именем уже существует")
-        msg.setWindowTitle("Ошибка в названии задачи")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def is_not_integer():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Введенное значение не является целым числом")
-        msg.setWindowTitle("Ошибка в указании целого числа")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def line_number_not_exist():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Номера данной строки не существует              ")
-        msg.setWindowTitle("Ошибка в написании номера удаления строки")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def no_achievements_to_plot():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Нет достижений для построения графика")
-        msg.setWindowTitle("Ошибка в построении графика")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def task_not_created():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Задача не создана              ")
-        msg.setWindowTitle("Ошибка в создании задачи")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msg.exec()
-
-    @staticmethod
-    def delete_task_or_not(parent) -> bool:
-        msg = QMessageBox()
+        window_title = translations[language]["windowTitle"]["questions"][question_name]
+        question_text = translations[language]["questions"][question_name]
         answer = msg.question(
             parent,
-            "Удаление задачи",
-            "Хотите удалить задачу? Восстановление будет невозможно",
+            window_title,
+            question_text,
             msg.Yes | msg.No
         )
-        if answer == msg.Yes:
-            return True
-        if answer == msg.No:
-            return False
 
-    @staticmethod
-    def replace_with_similar_date(parent) -> bool:
-        msg = QMessageBox()
-        answer = msg.question(
-            parent,
-            "Ошибка в указании даты",
-            "Результат с такой датой уже есть в таблице. Хотите заменить?",
-            msg.Yes | msg.No
-        )
+        # Processing Yes and No buttons
+
+        yes_button_text = translations[language]["btn"]["yes"]
+        no_button_text = translations[language]["btn"]["no"]
+
+        msg.button(QMessageBox.Yes).setText(yes_button_text)
+        msg.button(QMessageBox.No).setText(no_button_text)
+
         if answer == msg.Yes:
             return True
         if answer == msg.No:
             return False
 
 
-warning_dialog_window = WarningDialogWindow()
+warnings = WarningDialogWindow()

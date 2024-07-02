@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from PyQt5.QtGui import QCloseEvent
 from PyQt5 import uic
-from Py_files.warnings import warning_dialog_window
+from Py_files.warnings import warnings
 from Py_files.database import db
 import datetime
 
@@ -70,11 +70,12 @@ class AddAchievementToTable(QDialog):
                 if result.is_integer():
                     result = int(result)
             except ValueError:
-                warning_dialog_window.is_not_number()
+                warnings.cause_error("isNotInteger", self.current_language)
                 return
         # Checking whether an achievement occurred on a specified date
         if current_date in previous_dates:  # If a result with a similar date is already in the table
-            if warning_dialog_window.replace_with_similar_date(self):  # We suggest replacing (first delete, then add)
+            replace_with_similar_date = warnings.ask_question(self, "replaceWithSimilarDate", self.current_language)
+            if replace_with_similar_date:  # We suggest replacing (first delete, then add)
                 db.delete_achievement(current_date, task_name, self.user_id)
             else:
                 return

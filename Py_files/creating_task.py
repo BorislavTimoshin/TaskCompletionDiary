@@ -50,7 +50,8 @@ class CreateTask(QDialog):
                     db.add_task(task_name, result_name, unit, self.user_id)
                     # Adding a unit of measurement to the result name (if possible)
                     if unit not in ("number", "time"):
-                        result_name = f"{result_name} ({unit})"
+                        unit_abbr = self.translations[self.current_language]["unit"][unit]
+                        result_name = f"{result_name} ({unit_abbr})"
                     # Adding task data to the application
                     self.ex_main_window.CB_tasks.addItem(task_name)
                     self.ex_main_window.CB_tasks.setCurrentText(task_name)

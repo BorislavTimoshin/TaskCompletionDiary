@@ -24,8 +24,8 @@ if hasattr(Qt, "AA_UseHighDpiPixmaps"):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
-with open("Other_files/translations.json", "r", encoding="utf-8") as file:
-    translations = json.load(file)
+with open("Other_files/translations.json", "r", encoding="utf-8") as json_file:
+    translations = json.load(json_file)
 
 
 class MainWindow(QMainWindow):
@@ -114,13 +114,12 @@ class MainWindow(QMainWindow):
 
     def get_table_result_name(self, task_name: str) -> str:
         """ Getting the name of the task result, which is displayed in the table """
-        result_name, measure = db.get_task(task_name, self.user_id)
-        measure_is_number = translations[self.current_language]["measure"]["number"]
-        measure_is_time = translations[self.current_language]["measure"]["time"]
-        if result_name is None and measure is None:
+        result_name, unit = db.get_task(task_name, self.user_id)
+        if result_name is None and unit is None:
             result_name = translations[self.current_language]["tableWidget"]["defaultResultName"]
-        elif measure not in (measure_is_number, measure_is_time):
-            result_name = f"{result_name} ({measure})"
+        elif unit not in ("number", "time"):
+            unit_abbr = translations[self.current_language]["unit"][unit]
+            result_name = f"{result_name} ({unit_abbr})"
         return result_name
 
     def open_task(self, task_name: str) -> None:
@@ -206,15 +205,14 @@ class MainWindow(QMainWindow):
             warnings.cause_error("noAchievementsToPlot", self.current_language)
             return
         # We write the name of the result that will be displayed in the graph
-        result_name, measure = db.get_task(current_task, self.user_id)
-        measure_is_number = translations[self.current_language]["measure"]["number"]
-        measure_is_time = translations[self.current_language]["measure"]["time"]
-        if measure == measure_is_number:
+        result_name, unit = db.get_task(current_task, self.user_id)
+        if unit == "number":
             pass
-        elif measure == measure_is_time:
+        elif unit == "time":
             result_name = f"{result_name} (с)"
         else:
-            result_name = f"{result_name} ({measure})"
+            unit_abbr = translations[self.current_language]["unit"][unit]
+            result_name = f"{result_name} ({unit_abbr})"
         number_of_records_for_plotting = get_number_of_records_for_plotting(self)
         # Getting task results and dates on which they were completed
         results = db.get_results(current_task, self.user_id, sort_by_date_desc=False)

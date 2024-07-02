@@ -31,7 +31,8 @@ class CreateTask(QDialog):
         """ Processing data to create a task """
         task_name = self.LE_task_name.text()
         result_name = self.LE_result_name.text()
-        measure = self.CB_measures.currentText()
+        units = ("number", "kilogram", "centimeter", "meter", "kilometer", "meterPerSecond", "kilometerPerHour", "time")
+        unit = units[self.CB_units.currentIndex()]
         # Checking for empty task name and result name
         if not task_name:
             warnings.cause_error("taskNameCannotBeEmpty", self.current_language)
@@ -46,12 +47,10 @@ class CreateTask(QDialog):
                 if task_name in task_names:  # Checking the existence of a task with the same name
                     warnings.cause_error("taskAlreadyExists", self.current_language)
                 else:
-                    db.add_task(task_name, result_name, measure, self.user_id)
+                    db.add_task(task_name, result_name, unit, self.user_id)
                     # Adding a unit of measurement to the result name (if possible)
-                    measure_is_number = self.translations[self.current_language]["measure"]["number"]
-                    measure_is_time = self.translations[self.current_language]["measure"]["time"]
-                    if measure not in [measure_is_number, measure_is_time]:
-                        result_name = f"{result_name} ({measure})"
+                    if unit not in ("number", "time"):
+                        result_name = f"{result_name} ({unit})"
                     # Adding task data to the application
                     self.ex_main_window.CB_tasks.addItem(task_name)
                     self.ex_main_window.CB_tasks.setCurrentText(task_name)

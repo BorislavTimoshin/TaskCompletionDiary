@@ -25,7 +25,7 @@
       "login": "Login",
       "registration": "Registration"
     },
-    "measure": {
+    "unit": {
       "number": "Number",
       "kilogram": "kg",
       "centimeter": "cm",
@@ -78,9 +78,7 @@
       "back": "Back",
       "registrationAndLogin": "Register and login",
       "ok": "OK",
-      "cancel": "Cancel",
-      "yes": "Yes",
-      "no": "No"
+      "cancel": "Cancel"
     },
     "lbl": {
       "indicate": {
@@ -103,7 +101,7 @@
     "title": {
       "taskName": "Task name (max. 20 characters)",
       "resultName": "Name of the result (max. 15 characters)",
-      "unitOfMeasure": "Unit of measurement of the result"
+      "unit": "Unit of measurement of the result"
     },
     "placeholderText": {
       "deletingAchievement": "Enter the line number you want to delete",
@@ -118,7 +116,8 @@
       "taskAlreadyExists": "A task with the same name already exists",
       "isNotInteger": "The value entered is not an integer",
       "lineNumberNotExist": "The given line number does not exist",
-      "taskNotCreated": "Task not created"
+      "taskNotCreated": "Task not created",
+      "noAchievementsToPlot": "No achievements to plot"
     },
     "questions": {
       "shouldDeleteTask": "Do you want to delete the task? Restoration will not be possible",
@@ -152,7 +151,7 @@
       "login": "Вход в аккаунт",
       "registration": "Регистрация"
     },
-    "measure": {
+    "unit": {
       "number": "Число",
       "kilogram": "кг",
       "centimeter": "см",
@@ -205,9 +204,7 @@
       "back": "Вернуться",
       "registrationAndLogin": "Зарегистрироваться и войти",
       "ok": "Ок",
-      "cancel": "Отмена",
-      "yes": "Да",
-      "no": "Нет"
+      "cancel": "Отмена"
     },
     "lbl": {
       "indicate": {
@@ -230,7 +227,7 @@
     "title": {
       "taskName": "Название задачи (не более 20 символов)",
       "resultName": "Название результата (не более 15 символов)",
-      "unitOfMeasure": "Единица измерения результата"
+      "unit": "Единица измерения результата"
     },
     "placeholderText": {
       "deletingAchievement": "Введите номер строки, которую хотите удалить",
@@ -245,7 +242,8 @@
       "taskAlreadyExists": "Задание с таким именем уже существует",
       "isNotInteger": "Введенное значение не является целым числом",
       "lineNumberNotExist": "Номера данной строки не существует              ",
-      "taskNotCreated": "Задача не создана              "
+      "taskNotCreated": "Задача не создана              ",
+      "noAchievementsToPlot": "Нет достижений для построения графика"
     },
     "questions": {
       "shouldDeleteTask": "Хотите удалить задачу? Восстановление будет невозможно",

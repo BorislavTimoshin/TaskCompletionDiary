@@ -50,7 +50,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QComboBox" name="CB_measures">
+    <widget class="QComboBox" name="CB_units">
      <item>
       <property name="text">
        <string>Number</string>

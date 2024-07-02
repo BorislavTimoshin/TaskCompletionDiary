@@ -9,7 +9,7 @@ import datetime
 class AddAchievementToTable(QDialog):
     def __init__(self, ex_main_window, translations: dict, current_language: str):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/adding_entry.ui", self)
+        uic.loadUi(f"Design/{current_language}/adding_achievement.ui", self)
         self.ex_main_window = ex_main_window
         self.user_id = self.ex_main_window.user_id
         self.translations = translations
@@ -23,10 +23,9 @@ class AddAchievementToTable(QDialog):
         self.TE_result_in_form_time.hide()
 
         task_name = self.ex_main_window.CB_tasks.currentText()
-        measure = db.get_measure(task_name, self.user_id)
-        measure_is_time = self.translations[self.current_language]["measure"]["time"]
+        unit = db.get_unit(task_name, self.user_id)
 
-        if measure == measure_is_time:  # If the task unit is time
+        if unit == "time":
             self.TE_result_in_form_time.show()
         else:
             self.LE_result_in_form_int.show()
@@ -58,10 +57,9 @@ class AddAchievementToTable(QDialog):
         previous_dates = db.get_dates(task_name, self.user_id)
         mark = self.CB_marks.currentText()
         comment = self.LE_comment.text()
-        measure = db.get_measure(task_name, self.user_id)
-        measure_is_time = self.translations[self.current_language]["measure"]["time"]
+        unit = db.get_unit(task_name, self.user_id)
         # Checking the correctness of the entered result
-        if measure == measure_is_time:  # If the task unit is time
+        if unit == "time":
             result = self.TE_result_in_form_time.time()
             result = result.hour() * 3600 + result.minute() * 60 + result.second()
         else:

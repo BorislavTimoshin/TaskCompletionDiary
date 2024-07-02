@@ -87,15 +87,15 @@ class Database:
             return result[0]
         return 0
 
-    def add_task(self, task_name: str, result_name: str, measure: str, user_id: int) -> None:
+    def add_task(self, task_name: str, result_name: str, unit: str, user_id: int) -> None:
         """ Adding task information: task name, task result name, unit of measurement """
         with self.connection:
             query = """ 
-                INSERT INTO `Tasks` (`task_name`, `result_name`, `measure`, `id`) 
+                INSERT INTO `Tasks` (`task_name`, `result_name`, `unit`, `id`) 
                 VALUES
                   (?, ?, ?, ?);
             """
-            self.cursor.execute(query, (task_name, result_name, measure, user_id,))
+            self.cursor.execute(query, (task_name, result_name, unit, user_id,))
             self.connection.commit()
 
     def get_task(self, task_name: str, user_id: int) -> Union[tuple[str, str], tuple[None, None]]:
@@ -104,7 +104,7 @@ class Database:
             query = """
                 SELECT 
                   result_name,
-                  measure
+                  unit
                 FROM 
                   `Tasks` 
                 WHERE 
@@ -300,12 +300,12 @@ class Database:
             if result:
                 return result[0]
 
-    def get_measure(self, task_name: str, user_id: int) -> Union[str, None]:
+    def get_unit(self, task_name: str, user_id: int) -> Union[str, None]:
         """ Getting a unit of measurement for the result of a specific sports task of the user """
         with self.connection:
             query = """
                 SELECT
-                  measure
+                  unit
                 FROM 
                   `Tasks`
                 WHERE 

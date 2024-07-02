@@ -14,8 +14,8 @@ class WarningDialogWindow:
 
         # Processing error text
 
-        error_text = translations[language]["warnings"][error_name]
-        window_title = translations[language]["windowTitle"]["warnings"][error_name]
+        error_text = translations[language]["errors"][error_name]
+        window_title = translations[language]["windowTitle"]["errors"][error_name]
         msg.setText(error_text)
         msg.setWindowTitle(window_title)
 
@@ -44,14 +44,6 @@ class WarningDialogWindow:
             question_text,
             msg.Yes | msg.No
         )
-
-        # Processing Yes and No buttons
-
-        yes_button_text = translations[language]["btn"]["yes"]
-        no_button_text = translations[language]["btn"]["no"]
-
-        msg.button(QMessageBox.Yes).setText(yes_button_text)
-        msg.button(QMessageBox.No).setText(no_button_text)
 
         if answer == msg.Yes:
             return True

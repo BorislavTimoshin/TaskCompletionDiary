@@ -8,6 +8,7 @@ with open("Other_files/translations.json", "r", encoding="utf-8") as file:
 class WarningDialogWindow:
     @staticmethod
     def cause_error(error_name: str, language: str) -> None:
+        """ Throwing an error, an exception asking you to change something """
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
 
@@ -30,6 +31,7 @@ class WarningDialogWindow:
 
     @staticmethod
     def ask_question(parent, question_name: str, language: str) -> bool:
+        """ Asks a question to find out if something is worth changing or doing """
         msg = QMessageBox()
 
         # Processing question text

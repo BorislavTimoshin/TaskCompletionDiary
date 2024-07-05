@@ -10,6 +10,38 @@ class Database:
             detect_types=sqlite3.PARSE_DECLTYPES,
         )
         self.cursor = self.connection.cursor()
+        self.create_tables()
+
+    def create_tables(self) -> None:
+        """Creating database tables if they have not already been created"""
+        with self.connection:
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS Users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    login TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL
+                );
+            """)
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS Tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_name TEXT,
+                    result_name TEXT,
+                    unit TEXT,
+                    user_id INTEGER
+                );
+            """)
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS Achievements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date DATE,
+                    result INTEGER,
+                    mark INTEGER,
+                    comment TEXT,
+                    task_id INTEGER
+                );
+            """)
+            self.connection.commit()
 
     def user_exists(self, login: str, password: str) -> bool:
         """Checking whether a user exists in the database"""
@@ -98,7 +130,7 @@ class Database:
         """Adding task information: task name, task result name, unit of measurement"""
         with self.connection:
             query = """ 
-                INSERT INTO `Tasks` (`task_name`, `result_name`, `unit`, `id`) 
+                INSERT INTO `Tasks` (`task_name`, `result_name`, `unit`, `user_id`) 
                 VALUES
                   (?, ?, ?, ?);
             """
@@ -124,7 +156,7 @@ class Database:
                   `Tasks` 
                 WHERE 
                   `task_name` = ? 
-                  AND `id` = ?;
+                  AND `user_id` = ?;
             """
             result: list[tuple[str, str]] = self.cursor.execute(
                 query,
@@ -141,12 +173,12 @@ class Database:
         with self.connection:
             query = """
                 SELECT 
-                  task_id 
+                  id 
                 FROM 
                   `Tasks` 
                 WHERE 
                   `task_name` = ? 
-                  AND `id` = ?;
+                  AND `user_id` = ?;
             """
             result = self.cursor.execute(
                 query,
@@ -166,7 +198,7 @@ class Database:
                 FROM 
                   `Tasks` 
                 WHERE 
-                  `id` = ?;
+                  `user_id` = ?;
             """
             result: list[tuple[str]] = self.cursor.execute(query, (user_id,)).fetchall()
             return [task_name[0] for task_name in result]
@@ -178,7 +210,7 @@ class Database:
                 DELETE FROM 
                   `Tasks` 
                 WHERE 
-                  `task_id` = ?;
+                  `id` = ?;
             """
             query2 = """
                 DELETE FROM 
@@ -328,7 +360,7 @@ class Database:
                 FROM 
                   `Tasks`
                 WHERE 
-                  `task_id` = ?;
+                  `id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
             result = self.cursor.execute(query, (task_id,)).fetchone()
@@ -345,7 +377,7 @@ class Database:
                 FROM 
                   `Tasks`
                 WHERE 
-                  `task_id` = ?;
+                  `id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
             result = self.cursor.execute(query, (task_id,)).fetchone()

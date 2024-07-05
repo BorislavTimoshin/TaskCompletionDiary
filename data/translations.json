@@ -42,18 +42,6 @@
         "aboutProgram": "About the program"
       }
     },
-    "plotting": {
-      "option_1": "First 30 entries",
-      "option_2": "First 60 entries",
-      "option_3": "First 90 entries",
-      "option_4": "First 120 entries",
-      "option_5": "First 150 entries",
-      "option_6": "First 180 entries",
-      "option_7": "First 270 entries",
-      "option_8": "First 365 entries",
-      "option_9": "First 730 entries",
-      "option_10": "All entries"
-    },
     "tableWidget": {
       "date": "Date",
       "defaultResultName": "Result",
@@ -168,18 +156,6 @@
         "data": "Данные",
         "aboutProgram": "О программе"
       }
-    },
-    "plotting": {
-      "option_1": "Первые 30 записей",
-      "option_2": "Первые 60 записей",
-      "option_3": "Первые 90 записей",
-      "option_4": "Первые 120 записей",
-      "option_5": "Первые 150 записей",
-      "option_6": "Первые 180 записей",
-      "option_7": "Первые 270 записей",
-      "option_8": "Первые 365 записей",
-      "option_9": "Первые 730 записей",
-      "option_10": "Все записи"
     },
     "tableWidget": {
       "date": "Дата",

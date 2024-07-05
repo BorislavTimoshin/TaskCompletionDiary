@@ -116,11 +116,13 @@ class Database:
             SELECT 
               COUNT(*) 
             FROM 
-              `Achievements` 
+              `Achievements`
             WHERE 
               `task_id` = ?;
         """
         task_id = self.get_task_id(task_name, user_id)
+        if task_id is None:
+            return 0
         result = self.cursor.execute(query, (task_id,)).fetchone()
         if result:
             return result[0]
@@ -169,7 +171,7 @@ class Database:
                 return result
             return None, None
 
-    def get_task_id(self, task_name: str, user_id: int) -> int:
+    def get_task_id(self, task_name: str, user_id: int) -> Union[int, None]:
         with self.connection:
             query = """
                 SELECT 
@@ -187,7 +189,9 @@ class Database:
                     user_id,
                 ),
             ).fetchone()
-            return result[0]
+            if result:
+                return result[0]
+            return None
 
     def get_task_names(self, user_id: int) -> list[str]:
         """Getting user task names"""
@@ -219,6 +223,8 @@ class Database:
                   `task_id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return
             self.cursor.execute(query1, (task_id,))
             self.cursor.execute(query2, (task_id,))
 
@@ -237,6 +243,8 @@ class Database:
                   (?, ?, ?, ?, ?);
             """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return
             self.cursor.execute(
                 query,
                 (
@@ -260,12 +268,14 @@ class Database:
                   AND `task_id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return
             self.cursor.execute(query, (date, task_id))
             self.connection.commit()
 
     def get_achievements(
         self, task_name: str, user_id: int, sort_by_date_desc=True,
-    ) -> list[tuple[datetime.date, int, int, str]]:
+    ) -> Union[list[tuple[datetime.date, int, int, str]], None]:
         """Getting all user achievements for a specific sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -295,9 +305,11 @@ class Database:
                     ORDER BY date ASC;
                 """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return None
             return self.cursor.execute(query, (task_id,)).fetchall()
 
-    def get_dates(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[datetime.date]:
+    def get_dates(self, task_name: str, user_id: int, sort_by_date_desc=True) -> Union[list[datetime.date], None]:
         """Getting the dates of the results of a sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -321,10 +333,12 @@ class Database:
                     ORDER BY date ASC;
                 """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return None
             result: list[tuple[datetime.date]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [date[0] for date in result]
 
-    def get_results(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[int]:
+    def get_results(self, task_name: str, user_id: int, sort_by_date_desc=True) -> Union[list[int], None]:
         """Getting of the results of a sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -348,6 +362,8 @@ class Database:
                     ORDER BY date ASC;
                 """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return None
             results: list[tuple[int]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [result[0] for result in results]
 
@@ -363,6 +379,8 @@ class Database:
                   `id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return None
             result = self.cursor.execute(query, (task_id,)).fetchone()
             if result:
                 return result[0]
@@ -380,6 +398,8 @@ class Database:
                   `id` = ?;
             """
             task_id = self.get_task_id(task_name, user_id)
+            if task_id is None:
+                return None
             result = self.cursor.execute(query, (task_id,)).fetchone()
             if result:
                 return result[0]

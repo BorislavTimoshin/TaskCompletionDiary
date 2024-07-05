@@ -158,15 +158,15 @@ class Database:
                   `task_name` = ? 
                   AND `user_id` = ?;
             """
-            result: list[tuple[str, str]] = self.cursor.execute(
+            result: tuple[str, str] = self.cursor.execute(
                 query,
                 (
                     task_name,
                     user_id,
                 ),
-            ).fetchall()
+            ).fetchone()
             if result:
-                return result[0]
+                return result
             return None, None
 
     def get_task_id(self, task_name: str, user_id: int) -> int:

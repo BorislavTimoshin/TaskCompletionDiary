@@ -220,7 +220,7 @@
       "taskAlreadyExists": "Задание с таким именем уже существует",
       "isNotInteger": "Введенное значение не является целым числом",
       "lineNumberNotExist": "Номера данной строки не существует              ",
-      "taskNotCreated": "Задача не создана              ",
+      "taskNotCreated": "Задача не создана               ",
       "noAchievementsToPlot": "Нет достижений для построения графика"
     },
     "questions": {

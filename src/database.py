@@ -4,9 +4,9 @@ from typing import Union
 
 
 class Database:
-    def __init__(self, database_name):
+    def __init__(self, database_path: str):
         self.connection = sqlite3.connect(
-            database_name,
+            database_path,
             detect_types=sqlite3.PARSE_DECLTYPES,
         )
         self.cursor = self.connection.cursor()

@@ -3,7 +3,7 @@ import json
 from PyQt5.QtWidgets import QMessageBox
 
 
-with open("Other_files/translations.json", "r", encoding="utf-8") as file:
+with open("data/translations.json", "r", encoding="utf-8") as file:
     translations = json.load(file)
 
 

@@ -249,7 +249,7 @@ class MainWindow(QMainWindow):
             self,
             "Скачать таблицу",
             "",
-            "All Other_files(*.xlsx);;CSV Other_files (*.csv)",
+            "All data(*.xlsx);;CSV data (*.csv)",
         )
         if not file_path:
             return
@@ -275,7 +275,7 @@ class MainWindow(QMainWindow):
                         self.tableWidget.item(row, 3).text(),
                     ],
                 )
-        if file_type == "All Other_files(*.xlsx)":
+        if file_type == "All data(*.xlsx)":
             # FIXME модифицировать конвертацию
             csv_file = pd.read_csv(csv_path)
             excel_file = pd.ExcelWriter(file_path)

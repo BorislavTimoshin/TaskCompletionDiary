@@ -275,7 +275,7 @@ class Database:
 
     def get_achievements(
         self, task_name: str, user_id: int, sort_by_date_desc=True,
-    ) -> Union[list[tuple[datetime.date, int, int, str]], None]:
+    ) -> list[tuple[datetime.date, int, int, str]]:
         """Getting all user achievements for a specific sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -306,10 +306,10 @@ class Database:
                 """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return None
+                return list()
             return self.cursor.execute(query, (task_id,)).fetchall()
 
-    def get_dates(self, task_name: str, user_id: int, sort_by_date_desc=True) -> Union[list[datetime.date], None]:
+    def get_dates(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[datetime.date]:
         """Getting the dates of the results of a sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -334,11 +334,11 @@ class Database:
                 """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return None
+                return list()
             result: list[tuple[datetime.date]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [date[0] for date in result]
 
-    def get_results(self, task_name: str, user_id: int, sort_by_date_desc=True) -> Union[list[int], None]:
+    def get_results(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[int]:
         """Getting of the results of a sports task"""
         with self.connection:
             if sort_by_date_desc:
@@ -363,7 +363,7 @@ class Database:
                 """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return None
+                return list()
             results: list[tuple[int]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [result[0] for result in results]
 

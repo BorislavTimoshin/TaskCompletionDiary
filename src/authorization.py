@@ -1,8 +1,10 @@
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5 import uic
-from Py_files.login import Login
-from Py_files.registration import Registration
 import sys
+
+from PyQt5 import uic
+from PyQt5.QtWidgets import QMainWindow
+
+from src.login import Login
+from src.registration import Registration
 
 
 class Authorization(QMainWindow):
@@ -21,7 +23,7 @@ class Authorization(QMainWindow):
         self.btn_logout.clicked.connect(self.logout)
 
     def chage_language(self, language: str) -> None:
-        """ Translation of authorization text from one language to another """
+        """Translation of authorization text from one language to another"""
         self.current_language = language
         uic.loadUi(f"Design/{language}/authorization.ui", self)
         self.initUI()
@@ -32,7 +34,7 @@ class Authorization(QMainWindow):
             main_window=self.main_window,
             authorization=Authorization,
             translations=self.translations,
-            current_language=self.current_language
+            current_language=self.current_language,
         )
         self.ex_login.show()
 
@@ -42,11 +44,11 @@ class Authorization(QMainWindow):
             main_window=self.main_window,
             authorization=Authorization,
             translations=self.translations,
-            current_language=self.current_language
+            current_language=self.current_language,
         )
         self.ex_registration.show()
 
     @staticmethod
     def logout() -> None:
-        """ Exit from application """
+        """Exit from application"""
         sys.exit()

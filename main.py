@@ -1,21 +1,23 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.QtWidgets import QTableWidgetItem, QFileDialog
-from PyQt5.QtCore import Qt
-from PyQt5 import uic
-from Py_files.adding_achievement import AddAchievementToTable
-from Py_files.authorization import Authorization
-from Py_files.creating_task import CreateTask
-from Py_files.warnings import warnings
-from Py_files.chart import Chart
-from Py_files.database import db
-from Py_files.help import Help
-from typing import Union
-import pandas as pd
-import locale
-import json
 import csv
+import json
+import locale
 import os
 import sys
+from typing import Union
+
+import pandas as pd
+from PyQt5 import uic
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QTableWidgetItem
+
+from src.adding_achievement import AddAchievementToTable
+from src.authorization import Authorization
+from src.chart import Chart
+from src.creating_task import CreateTask
+from src.database import db
+from src.help import Help
+from src.notifications import notifications
+
 
 if hasattr(Qt, "AA_EnableHighDpiScaling"):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -24,7 +26,7 @@ if hasattr(Qt, "AA_UseHighDpiPixmaps"):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
-with open("Other_files/translations.json", "r", encoding="utf-8") as json_file:
+with open("data/translations.json", "r", encoding="utf-8") as json_file:
     translations = json.load(json_file)
 
 
@@ -62,10 +64,6 @@ class MainWindow(QMainWindow):
         self.CB_tasks.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.CB_tasks.currentTextChanged.connect(self.open_task)
 
-        # Plotting
-
-        self.plotting_option_1.setChecked(True)
-
         # Building a table
 
         self.tableWidget.setColumnWidth(1, 160)
@@ -90,19 +88,19 @@ class MainWindow(QMainWindow):
         self.fill_table()
 
     def change_language_to_english(self) -> None:
-        """ Translation of the main window text into English """
+        """Translation of the main window text into English"""
         self.current_language = "English"
-        uic.loadUi(f"Design/English/main.ui", self)
+        uic.loadUi("Design/English/main.ui", self)
         self.initUI()
 
     def change_language_to_russian(self) -> None:
-        """ Translation of the main window text into Russian """
+        """Translation of the main window text into Russian"""
         self.current_language = "Russian"
-        uic.loadUi(f"Design/Russian/main.ui", self)
+        uic.loadUi("Design/Russian/main.ui", self)
         self.initUI()
 
     def fill_table(self) -> None:
-        """ Filling the table with the user`s achievements for the current sports task """
+        """Filling the table with the user`s achievements for the current sports task"""
         task_name = self.CB_tasks.currentText()
         achievements = db.get_achievements(task_name, self.user_id)
         self.tableWidget.setRowCount(len(achievements))
@@ -113,45 +111,35 @@ class MainWindow(QMainWindow):
             self.tableWidget.setItem(row, 3, QTableWidgetItem(comment))
 
     def get_table_result_name(self, task_name: str) -> str:
-        """ Getting the name of the task result, which is displayed in the table """
+        """Getting the name of the task result, which is displayed in the table"""
         result_name, unit = db.get_task(task_name, self.user_id)
         if result_name is None and unit is None:
-            result_name = translations[self.current_language]["tableWidget"]["defaultResultName"]
-        elif unit not in ("number", "time"):
+            return translations[self.current_language]["tableWidget"]["defaultResultName"]
+        if unit not in ("number", "time"):
             unit_abbr = translations[self.current_language]["unit"][unit]
-            result_name = f"{result_name} ({unit_abbr})"
+            return f"{result_name} ({unit_abbr})"
         return result_name
 
     def open_task(self, task_name: str) -> None:
-        """ Opening a user`s sport task """
+        """Opening a user`s sport task"""
         table_result_name = self.get_table_result_name(task_name)
         self.resultTableWidget.setText(table_result_name)
         self.fill_table()
-        self.plotting_option_1.setChecked(True)
-        self.plotting_option_2.setChecked(False)
-        self.plotting_option_3.setChecked(False)
-        self.plotting_option_4.setChecked(False)
-        self.plotting_option_5.setChecked(False)
-        self.plotting_option_6.setChecked(False)
-        self.plotting_option_7.setChecked(False)
-        self.plotting_option_8.setChecked(False)
-        self.plotting_option_9.setChecked(False)
-        self.plotting_option_10.setChecked(False)
 
     def create_task(self) -> None:
-        """ Creating a task: task name, result name, unit of measurement """
+        """Creating a task: task name, result name, unit of measurement"""
         self.creating_task = CreateTask(self, translations, self.current_language)
         self.creating_task.show()
 
     def delete_task(self) -> None:
-        """ Deleting a task and everything associated with it """
+        """Deleting a task and everything associated with it"""
         task_name = self.CB_tasks.currentText()
         task_names = db.get_task_names(self.user_id)
         # If there are no tasks, then an error
         if not task_name:
-            warnings.cause_error("taskNotCreated", self.current_language)
+            notifications.cause_error("taskNotCreated", self.current_language)
             return
-        should_delete_task = warnings.ask_question(self, "shouldDeleteTask", self.current_language)
+        should_delete_task = notifications.ask_question(self, "shouldDeleteTask", self.current_language)
         if should_delete_task:
             # Deleting the current task
             self.CB_tasks.removeItem(task_names.index(task_name))
@@ -162,48 +150,54 @@ class MainWindow(QMainWindow):
             self.open_task(new_task_name)
 
     def add_achievement(self) -> None:
-        """ Adding an achievement to the table: result date, result, rating, comment """
+        """Adding an achievement to the table: result date, result, rating, comment"""
         task_name = self.CB_tasks.currentText()
         if not task_name:  # If there are no tasks, then an error
-            warnings.cause_error("taskNotCreated", self.current_language)
+            notifications.cause_error("taskNotCreated", self.current_language)
             return
         self.close()
         self.adding_achievement = AddAchievementToTable(self, translations, self.current_language)
         self.adding_achievement.show()
 
-    def delete_achievement(self) -> None:
-        """ Removing an achievement from the table: result date, result, rating, comment """
-        achievement_number = self.LE_delete_achievement_by_number.text()
-        # Checking if the entered value is an integer
+    def is_table_row_number(self, number: str) -> bool:
+        # Checking if the value is an integer
         try:
-            achievement_number = int(achievement_number)
+            row_number = int(number)
         except ValueError:
-            warnings.cause_error("isNotInteger", self.current_language)
-            return
+            notifications.cause_error("isNotInteger", self.current_language)
+            return False
         task_name = self.CB_tasks.currentText()
-        # Checking whether the entered number could be a number in the spreadsheet table
+        # Check if a number can be a number in a table
         number_of_achievements = db.get_number_of_achievements(task_name, self.user_id)
-        if number_of_achievements < achievement_number or achievement_number <= 0:
-            warnings.cause_error("lineNumberNotExist", self.current_language)
-        else:
+        if number_of_achievements < row_number or row_number <= 0:
+            notifications.cause_error("lineNumberNotExist", self.current_language)
+            return False
+        return True
+
+    def delete_achievement(self) -> None:
+        """Removing an achievement from the table: result date, result, rating, comment"""
+        achievement_number = self.LE_delete_achievement_by_number.text()
+        task_name = self.CB_tasks.currentText()
+        if self.is_table_row_number(achievement_number):
+            achievement_number = int(achievement_number)
             dates = db.get_dates(task_name, self.user_id)
             db.delete_achievement(dates[achievement_number - 1], task_name, self.user_id)
             self.LE_delete_achievement_by_number.clear()
             self.fill_table()
 
     def get_ex_chart(self) -> Union[Chart, None]:
-        """ Getting an exemplar of the Chart class, thanks to which you
-        can work with the chart: demonstrate, download, and more """
+        """Getting an exemplar of the Chart class, thanks to which you
+        can work with the chart: demonstrate, download, and more"""
         current_task = self.CB_tasks.currentText()
         # If there are no tasks, then an error
         if not current_task:
-            warnings.cause_error("taskNotCreated", self.current_language)
-            return
+            notifications.cause_error("taskNotCreated", self.current_language)
+            return None
         # If there are no achievements, then there is an error
         number_of_achievements = db.get_number_of_achievements(current_task, self.user_id)
         if not number_of_achievements:
-            warnings.cause_error("noAchievementsToPlot", self.current_language)
-            return
+            notifications.cause_error("noAchievementsToPlot", self.current_language)
+            return None
         # We write the name of the result that will be displayed in the graph
         result_name, unit = db.get_task(current_task, self.user_id)
         if unit == "number":
@@ -213,49 +207,49 @@ class MainWindow(QMainWindow):
         else:
             unit_abbr = translations[self.current_language]["unit"][unit]
             result_name = f"{result_name} ({unit_abbr})"
-        number_of_records_for_plotting = get_number_of_records_for_plotting(self)
-        # Getting task results and dates on which they were completed
-        results = db.get_results(current_task, self.user_id, sort_by_date_desc=False)
-        dates = db.get_dates(current_task, self.user_id, sort_by_date_desc=False)
-        points = pd.Series(results, index=dates)
-        if number_of_records_for_plotting != "all_records":
-            points = pd.Series(results, index=dates)[:number_of_records_for_plotting + 1]
-        chart = Chart(
-            ex_main_window=self,
-            points=points,
-            task_name=current_task,
-            result_name=result_name,
-            translations=translations,
-            current_language=self.current_language
-        )
-        return chart
+        first_result = self.LE_first_result.text()
+        last_result = self.LE_last_result.text()
+        if self.is_table_row_number(first_result) and self.is_table_row_number(last_result):
+            first_result, last_result = sorted(map(int, (first_result, last_result)))
+            # Getting task results and dates on which they were completed
+            results = db.get_results(current_task, self.user_id, sort_by_date_desc=False)
+            dates = db.get_dates(current_task, self.user_id, sort_by_date_desc=False)
+            points = pd.Series(results, index=dates)[first_result - 1:last_result]
+            return Chart(
+                ex_main_window=self,
+                points=points,
+                task_name=current_task,
+                result_name=result_name,
+                translations=translations,
+            )
+        return None
 
     def show_chart(self) -> None:
-        """ Demonstration of a graph of the results of the current sports task as a foto """
+        """Demonstration of a graph of the results of the current sports task as a foto"""
         self.ex_chart = self.get_ex_chart()
         if self.ex_chart is None:  # For example, an exception occurred
             return
         self.ex_chart.show_chart()
 
     def download_chart(self) -> None:
-        """ Exporting a graph of the results of the current sports task as a photo """
+        """Exporting a graph of the results of the current sports task as a photo"""
         self.ex_chart = self.get_ex_chart()
         if self.ex_chart is None:  # For example, an exception occurred
             return
         self.ex_chart.download_chart()
 
     def download_table(self) -> None:
-        """ Export table data from an application """
+        """Export table data from an application"""
         task_name = self.CB_tasks.currentText()
         # If there are no tasks, then an error
         if not task_name:
-            warnings.cause_error("taskNotCreated", self.current_language)
+            notifications.cause_error("taskNotCreated", self.current_language)
             return
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             "Скачать таблицу",
             "",
-            "All Other_files(*.xlsx);;CSV Other_files (*.csv)"
+            "All Other_files(*.xlsx);;CSV Other_files (*.csv)",
         )
         if not file_path:
             return
@@ -263,20 +257,24 @@ class MainWindow(QMainWindow):
         with open(csv_path, "w", encoding="utf-8", newline="") as file:
             writer = csv.writer(file)
             # Adding Column Titles to a CSV File
-            writer.writerow([
-                self.dateTableWidget.text(),
-                self.resultTableWidget.text(),
-                self.markTableWidget.text(),
-                self.commentTableWidget.text()
-            ])
+            writer.writerow(
+                [
+                    self.dateTableWidget.text(),
+                    self.resultTableWidget.text(),
+                    self.markTableWidget.text(),
+                    self.commentTableWidget.text(),
+                ],
+            )
             # Adding achievements to a CSV file
             for row in range(self.tableWidget.rowCount()):
-                writer.writerow([
-                    self.tableWidget.item(row, 0).text(),
-                    self.tableWidget.item(row, 1).text(),
-                    self.tableWidget.item(row, 2).text(),
-                    self.tableWidget.item(row, 3).text()
-                ])
+                writer.writerow(
+                    [
+                        self.tableWidget.item(row, 0).text(),
+                        self.tableWidget.item(row, 1).text(),
+                        self.tableWidget.item(row, 2).text(),
+                        self.tableWidget.item(row, 3).text(),
+                    ],
+                )
         if file_type == "All Other_files(*.xlsx)":
             # FIXME модифицировать конвертацию
             csv_file = pd.read_csv(csv_path)
@@ -286,53 +284,30 @@ class MainWindow(QMainWindow):
             os.remove(csv_path)
 
     def view_about(self) -> None:
-        """ View the program description: how to use the application """
+        """View the program description: how to use the application"""
         self.ex_help = Help(translations, self.current_language)
         self.ex_help.show_about()
 
     def view_version(self) -> None:
-        """ View the program version: for developers """
+        """View the program version: for developers"""
         self.ex_help = Help(translations, self.current_language)
         self.ex_help.show_version()
 
     def logout(self) -> None:
-        """ Logging out of your account (proceeding to authorization) """
+        """Logging out of your account (proceeding to authorization)"""
         self.close()
         self.ex_authorization = Authorization(
             main_window=MainWindow,
             translations=translations,
-            current_language=self.current_language
+            current_language=self.current_language,
         )
         self.ex_authorization.show()
 
 
-def get_number_of_records_for_plotting(parent: MainWindow):
-    # FIXME !!!
-    if parent.plotting_option_1.isChecked():
-        return 30
-    if parent.plotting_option_2.isChecked():
-        return 60
-    if parent.plotting_option_3.isChecked():
-        return 90
-    if parent.plotting_option_4.isChecked():
-        return 120
-    if parent.plotting_option_5.isChecked():
-        return 150
-    if parent.plotting_option_6.isChecked():
-        return 180
-    if parent.plotting_option_7.isChecked():
-        return 270
-    if parent.plotting_option_8.isChecked():
-        return 365
-    if parent.plotting_option_9.isChecked():
-        return 730
-    return "all_records"
-
-
 def get_system_language() -> str:
-    """ Getting the system language: the language that appears at the beginning of the program
+    """Getting the system language: the language that appears at the beginning of the program
     (for most CIS countries - Russian, otherwise - English)
-    P.S. The system language may change as languages are added to the application """
+    P.S. The system language may change as languages are added to the application"""
     language, encoding = locale.getdefaultlocale()
     cis_languages = ("ru_RU", "be_BE", "kk_KZ", "uk-UK", "az_AZ", "tk_TM", "ky_KG", "ro_MD", "uz_UZ", "hy_AM", "tg_TJ")
     if language in cis_languages:
@@ -345,7 +320,7 @@ if __name__ == "__main__":
     authorization = Authorization(
         main_window=MainWindow,
         translations=translations,
-        current_language=get_system_language()
+        current_language=get_system_language(),
     )
     authorization.show()
     sys.exit(application.exec())

@@ -101,7 +101,8 @@
     "title": {
       "taskName": "Task name (max. 20 characters)",
       "resultName": "Name of the result (max. 15 characters)",
-      "unit": "Unit of measurement of the result"
+      "unit": "Unit of measurement of the result",
+      "downloadChart": "Download chart"
     },
     "placeholderText": {
       "deletingAchievement": "Enter the line number you want to delete",
@@ -227,7 +228,8 @@
     "title": {
       "taskName": "Название задачи (не более 20 символов)",
       "resultName": "Название результата (не более 15 символов)",
-      "unit": "Единица измерения результата"
+      "unit": "Единица измерения результата",
+      "downloadChart": "Скачать график"
     },
     "placeholderText": {
       "deletingAchievement": "Введите номер строки, которую хотите удалить",

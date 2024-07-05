@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
-from PyQt5.QtGui import QCloseEvent
-from PyQt5 import uic
-from Py_files.warnings import warnings
-from Py_files.database import db
 import datetime
+
+from PyQt5 import uic
+from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+
+from src.database import db
+from src.notifications import notifications
 
 
 class AddAchievementToTable(QDialog):
@@ -42,16 +44,15 @@ class AddAchievementToTable(QDialog):
         self.adding_achievement_dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
 
     def get_date_of_achievement(self) -> datetime.date:
-        """ Getting the date on which the achievement was completed """
-        date = datetime.date(
+        """Getting the date on which the achievement was completed"""
+        return datetime.date(
             year=self.calendarWidget.selectedDate().year(),
             month=self.calendarWidget.selectedDate().month(),
-            day=self.calendarWidget.selectedDate().day()
+            day=self.calendarWidget.selectedDate().day(),
         )
-        return date
 
     def accept(self) -> None:
-        """ Processing data to add achievement to the table """
+        """Processing data to add achievement to the table"""
         task_name = self.ex_main_window.CB_tasks.currentText()
         current_date = self.get_date_of_achievement()
         previous_dates = db.get_dates(task_name, self.user_id)
@@ -68,11 +69,15 @@ class AddAchievementToTable(QDialog):
                 if result.is_integer():
                     result = int(result)
             except ValueError:
-                warnings.cause_error("isNotInteger", self.current_language)
+                notifications.cause_error("isNotInteger", self.current_language)
                 return
         # Checking whether an achievement occurred on a specified date
         if current_date in previous_dates:  # If a result with a similar date is already in the table
-            replace_with_similar_date = warnings.ask_question(self, "replaceWithSimilarDate", self.current_language)
+            replace_with_similar_date = notifications.ask_question(
+                self,
+                "replaceWithSimilarDate",
+                self.current_language,
+            )
             if replace_with_similar_date:  # We suggest replacing (first delete, then add)
                 db.delete_achievement(current_date, task_name, self.user_id)
             else:
@@ -85,11 +90,11 @@ class AddAchievementToTable(QDialog):
         self.ex_main_window.show()
 
     def cancel(self) -> None:
-        """ Closing the dialog box (AddAchievementToTable) by clicking on "cancel" """
+        """Closing the dialog box (AddAchievementToTable) by clicking on "cancel" """
         self.reject()
         self.ex_main_window.show()
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        """ Closing the dialog box (AddAchievementToTable) by clicking on the red cross """
+        """Closing the dialog box (AddAchievementToTable) by clicking on the red cross"""
         event.accept()
         self.ex_main_window.show()

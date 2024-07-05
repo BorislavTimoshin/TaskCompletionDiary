@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from PyQt5 import uic
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 
 class Help(QDialog):
@@ -16,13 +16,13 @@ class Help(QDialog):
         self.about_program_dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
 
     def show_about(self) -> None:
-        """ Viewing the dialog box: description of the program, rules for working with the application """
+        """Viewing the dialog box: description of the program, rules for working with the application"""
         uic.loadUi(f"Design/{self.current_language}/about.ui", self)
         self.initUI()
         self.show()
 
     def show_version(self) -> None:
-        """ View dialog box: program version; created for developers """
+        """View dialog box: program version; created for developers"""
         uic.loadUi(f"Design/{self.current_language}/version.ui", self)
         self.initUI()
         self.show()

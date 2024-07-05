@@ -1,14 +1,16 @@
-from PyQt5.QtWidgets import QMessageBox
 import json
+
+from PyQt5.QtWidgets import QMessageBox
+
 
 with open("Other_files/translations.json", "r", encoding="utf-8") as file:
     translations = json.load(file)
 
 
-class WarningDialogWindow:
+class Notification:
     @staticmethod
     def cause_error(error_name: str, language: str) -> None:
-        """ Throwing an error, an exception asking you to change something """
+        """Throwing an error, an exception asking you to change something"""
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
 
@@ -31,7 +33,7 @@ class WarningDialogWindow:
 
     @staticmethod
     def ask_question(parent, question_name: str, language: str) -> bool:
-        """ Asks a question to find out if something is worth changing or doing """
+        """Asks a question to find out if something is worth changing or doing"""
         msg = QMessageBox()
 
         # Processing question text
@@ -42,13 +44,12 @@ class WarningDialogWindow:
             parent,
             window_title,
             question_text,
-            msg.Yes | msg.No
+            msg.Yes | msg.No,
         )
 
         if answer == msg.Yes:
             return True
-        if answer == msg.No:
-            return False
+        return False
 
 
-warnings = WarningDialogWindow()
+notifications = Notification()

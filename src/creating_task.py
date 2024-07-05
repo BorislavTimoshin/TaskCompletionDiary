@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
-from PyQt5.QtGui import QCloseEvent
 from PyQt5 import uic
-from Py_files.warnings import warnings
-from Py_files.database import db
+from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+
+from src.database import db
+from src.notifications import notifications
 
 
 class CreateTask(QDialog):
@@ -28,24 +29,33 @@ class CreateTask(QDialog):
         self.task_creation_dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
 
     def accept(self) -> None:
-        """ Processing data to create a task """
+        """Processing data to create a task"""
         task_name = self.LE_task_name.text()
         result_name = self.LE_result_name.text()
-        units = ("number", "kilogram", "centimeter", "meter", "kilometer", "meterPerSecond", "kilometerPerHour", "time")
+        units = (
+            "number",
+            "kilogram",
+            "centimeter",
+            "meter",
+            "kilometer",
+            "meterPerSecond",
+            "kilometerPerHour",
+            "time",
+        )
         unit = units[self.CB_units.currentIndex()]
         # Checking for empty task name and result name
         if not task_name:
-            warnings.cause_error("taskNameCannotBeEmpty", self.current_language)
+            notifications.cause_error("taskNameCannotBeEmpty", self.current_language)
             return
         if not result_name:
-            warnings.cause_error("resultNameCannotBeEmpty", self.current_language)
+            notifications.cause_error("resultNameCannotBeEmpty", self.current_language)
             return
         # Checking the task name and result name for valid length
         if len(task_name) <= 30:
             if len(result_name) <= 15:
                 task_names = db.get_task_names(self.user_id)
                 if task_name in task_names:  # Checking the existence of a task with the same name
-                    warnings.cause_error("taskAlreadyExists", self.current_language)
+                    notifications.cause_error("taskAlreadyExists", self.current_language)
                 else:
                     db.add_task(task_name, result_name, unit, self.user_id)
                     # Adding a unit of measurement to the result name (if possible)
@@ -59,14 +69,14 @@ class CreateTask(QDialog):
                     # Closing the dialog box (CreateTask)
                     self.reject()
             else:
-                warnings.cause_error("lenResultNameMore15", self.current_language)
+                notifications.cause_error("lenResultNameMore15", self.current_language)
         else:
-            warnings.cause_error("lenTaskNameMore30", self.current_language)
+            notifications.cause_error("lenTaskNameMore30", self.current_language)
 
     def cancel(self) -> None:
-        """ Closing the dialog box (CreateTask) by clicking on "cancel" """
+        """Closing the dialog box (CreateTask) by clicking on "cancel" """
         self.reject()
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        """ Closing the dialog box (CreateTask) by clicking on the red cross """
+        """Closing the dialog box (CreateTask) by clicking on the red cross"""
         event.accept()

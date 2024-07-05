@@ -1,22 +1,23 @@
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
-from PyQt5 import uic
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import math
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 from pandas.core.series import Series
-from math import ceil
+from PyQt5 import uic
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
 
 class Chart(QMainWindow):
-    def __init__(self, ex_main_window, points: Series, task_name: str, result_name: str, translations: dict, current_language: str):
+    def __init__(self, ex_main_window, points: Series, task_name: str, result_name: str, translations: dict):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/chart.ui", self)
+        self.current_language = self.ex_main_window.current_language
+        uic.loadUi(f"Design/{self.current_language}/chart.ui", self)
         self.ex_main_window = ex_main_window
         self.points = points
         self.task_name = task_name
         self.result_name = result_name
         self.translations = translations
-        self.current_language = current_language
         self.initUI()
 
     def initUI(self) -> None:
@@ -27,25 +28,21 @@ class Chart(QMainWindow):
         self.chartWidgetLayout.addWidget(self.canvas)
 
     def draw_chart(self) -> None:
-        """ Creating a chart and drawing it """
+        """Creating a chart and drawing it"""
         ax = self.figure.subplots()
         ax.plot(
             self.points.index,
             self.points.values,
-            marker='o',
-            color='blue',
-            linestyle='--',
+            marker="o",
+            color="blue",
+            linestyle="--",
             linewidth=2,
         )
         date_title = self.translations[self.current_language]["tableWidget"]["date"]
-        ax.set(
-            xlabel=date_title,
-            ylabel=self.result_name,
-            title=self.task_name
-        )
+        ax.set(xlabel=date_title, ylabel=self.result_name, title=self.task_name)
         ax.grid()
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%y'))
-        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=ceil(len(self.points) / 10)))
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%d.%m.%y"))
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=math.ceil(len(self.points) / 10)))
         plt.gcf().autofmt_xdate()
         self.canvas.draw()
 
@@ -55,17 +52,18 @@ class Chart(QMainWindow):
 
     def download_chart(self) -> None:
         self.draw_chart()
+        download_chart_title = self.translations[self.current_language]["title"]["downloadChart"]
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
-            'Скачать график',
-            '',
-            '.jpg;;.jpeg;;.png'
+            download_chart_title,
+            "",
+            ".jpg;;.jpeg;;.png",
         )
         if not file_path:
             return
         if file_type == ".jpg":
-            plt.savefig(f"{file_path}.jpg", bbox_inches='tight')
+            plt.savefig(f"{file_path}.jpg", bbox_inches="tight")
         elif file_type == ".jpeg":
-            plt.savefig(f"{file_path}.jpeg", bbox_inches='tight')
+            plt.savefig(f"{file_path}.jpeg", bbox_inches="tight")
         elif file_type == ".png":
-            plt.savefig(f"{file_path}.png", bbox_inches='tight')
+            plt.savefig(f"{file_path}.png", bbox_inches="tight")

@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QMainWindow
 from PyQt5 import uic
-from Py_files.database import db
+from PyQt5.QtWidgets import QMainWindow
+
+from src.database import db
 
 
 class Login(QMainWindow):
@@ -20,7 +21,7 @@ class Login(QMainWindow):
         self.lbl_wrong_name_or_password.hide()
 
     def chage_language(self, language: str) -> None:
-        """ Translation of login text from one language to another """
+        """Translation of login text from one language to another"""
         self.current_language = language
         uic.loadUi(f"Design/{language}/login.ui", self)
         self.initUI()
@@ -36,12 +37,12 @@ class Login(QMainWindow):
                 self.lbl_wrong_name_or_password.show()
 
     def back(self) -> None:
-        """ Return from login to authorization """
+        """Return from login to authorization"""
         self.close()
         self.ex_authorization = self.authorization(
             main_window=self.main_window,
             translations=self.translations,
-            current_language=self.current_language
+            current_language=self.current_language,
         )
         self.ex_authorization.show()
 
@@ -49,6 +50,6 @@ class Login(QMainWindow):
         self.close()
         self.ex_main_window = self.main_window(
             user_id=user_id,
-            current_language=self.current_language
+            current_language=self.current_language,
         )
         self.ex_main_window.show()

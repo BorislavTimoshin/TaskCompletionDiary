@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QFileDialog, QMainWindow
 class Chart(QMainWindow):
     def __init__(self, ex_main_window, points: Series, task_name: str, result_name: str, translations: dict):
         super().__init__()
-        self.current_language = self.ex_main_window.current_language
+        self.current_language = ex_main_window.current_language
         uic.loadUi(f"Design/{self.current_language}/chart.ui", self)
         self.ex_main_window = ex_main_window
         self.points = points

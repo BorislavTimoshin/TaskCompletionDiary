@@ -158,19 +158,6 @@ QHeaderView::section:vertical {
      <string>Удалить запись</string>
     </property>
    </widget>
-   <widget class="QLabel" name="lbl_plotting">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>460</y>
-      <width>461</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;Укажите диапазон результатов для &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;построения графика (порядок не важен):&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_logout">
     <property name="geometry">
      <rect>
@@ -219,44 +206,15 @@ QHeaderView::section:vertical {
      </item>
     </layout>
    </widget>
-   <widget class="QLineEdit" name="LE_last_result">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>570</y>
-      <width>231</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="placeholderText">
-     <string>Номер строки последнего результата</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="LE_first_result">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>530</y>
-      <width>231</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="placeholderText">
-     <string>Номер строки первого результата</string>
-    </property>
-   </widget>
    <zorder>lbl_open_task</zorder>
    <zorder>CB_tasks</zorder>
    <zorder>btn_delete_task</zorder>
    <zorder>LE_delete_achievement_by_number</zorder>
    <zorder>lbl_delete_achievement_text</zorder>
    <zorder>btn_delete_achievement</zorder>
-   <zorder>lbl_plotting</zorder>
    <zorder>btn_logout</zorder>
    <zorder>tableWidget</zorder>
    <zorder>horizontalLayoutWidget</zorder>
-   <zorder>LE_last_result</zorder>
-   <zorder>LE_first_result</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

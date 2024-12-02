@@ -7,26 +7,26 @@ from src.notifications import notifications
 
 
 class CreateTask(QDialog):
-    def __init__(self, ex_main_window, translations: dict, current_language: str):
+    def __init__(self, ex_main_window, translations: dict):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/creating_task.ui", self)
+        uic.loadUi(f"Design/{ex_main_window.current_language}/creating_task.ui", self)
         self.ex_main_window = ex_main_window
-        self.user_id = self.ex_main_window.user_id
         self.translations = translations
-        self.current_language = current_language
+        self.current_language = ex_main_window.current_language
+        self.user_id = self.ex_main_window.user_id
         self.initUI()
 
     def initUI(self) -> None:
         # Processing Ok and Cancel buttons
 
-        self.task_creation_dialog_btns.accepted.connect(self.accept)
-        self.task_creation_dialog_btns.rejected.connect(self.cancel)
+        self.dialog_btns.accepted.connect(self.accept)
+        self.dialog_btns.rejected.connect(self.cancel)
 
         ok_button_text = self.translations[self.current_language]["btn"]["ok"]
         cancel_button_text = self.translations[self.current_language]["btn"]["cancel"]
 
-        self.task_creation_dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
-        self.task_creation_dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
+        self.dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
+        self.dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
 
     def accept(self) -> None:
         """Processing data to create a task"""

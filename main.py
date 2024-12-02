@@ -3,7 +3,6 @@ import json
 import locale
 import os
 import sys
-from typing import Union
 
 import pandas as pd
 from PyQt5 import uic
@@ -11,8 +10,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QTableWidgetItem
 
 from src.adding_achievement import AddAchievementToTable
-from src.authorization import Authorization
+from src.authorization.authorization import Authorization
 from src.chart import Chart
+from src.user_data_for_chart import UserDataForChart
 from src.creating_task import CreateTask
 from src.database import db
 from src.help import Help
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
 
         self.download_chart_action.triggered.connect(self.download_chart)
         self.download_table_action.triggered.connect(self.download_table)
-        self.show_chart_action.triggered.connect(self.show_chart)
+        self.show_chart_action.triggered.connect(self.get_user_data_for_chart)
         self.about_action.triggered.connect(self.view_about)
         self.version_action.triggered.connect(self.view_version)
         self.language_english_action.triggered.connect(self.change_language_to_english)
@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
 
     def create_task(self) -> None:
         """Creating a task: task name, result name, unit of measurement"""
-        self.creating_task = CreateTask(self, translations, self.current_language)
+        self.creating_task = CreateTask(self, translations)
         self.creating_task.show()
 
     def delete_task(self) -> None:
@@ -139,7 +139,11 @@ class MainWindow(QMainWindow):
         if not task_name:
             notifications.cause_error("taskNotCreated", self.current_language)
             return
-        should_delete_task = notifications.ask_question(self, "shouldDeleteTask", self.current_language)
+        should_delete_task = notifications.ask_question(
+            self,
+            "shouldDeleteTask",
+            self.current_language,
+        )
         if should_delete_task:
             # Deleting the current task
             self.CB_tasks.removeItem(task_names.index(task_name))
@@ -156,7 +160,7 @@ class MainWindow(QMainWindow):
             notifications.cause_error("taskNotCreated", self.current_language)
             return
         self.close()
-        self.adding_achievement = AddAchievementToTable(self, translations, self.current_language)
+        self.adding_achievement = AddAchievementToTable(self, translations)
         self.adding_achievement.show()
 
     def is_table_row_number(self, number: str) -> bool:
@@ -181,59 +185,30 @@ class MainWindow(QMainWindow):
         if self.is_table_row_number(achievement_number):
             achievement_number = int(achievement_number)
             dates = db.get_dates(task_name, self.user_id)
-            db.delete_achievement(dates[achievement_number - 1], task_name, self.user_id)
+            db.delete_achievement(
+                dates[achievement_number - 1],
+                task_name,
+                self.user_id
+            )
             self.LE_delete_achievement_by_number.clear()
             self.fill_table()
 
-    def get_ex_chart(self) -> Union[Chart, None]:
-        """Getting an exemplar of the Chart class, thanks to which you
-        can work with the chart: demonstrate, download, and more"""
-        current_task = self.CB_tasks.currentText()
-        # If there are no tasks, then an error
-        if not current_task:
-            notifications.cause_error("taskNotCreated", self.current_language)
-            return None
-        # If there are no achievements, then there is an error
-        number_of_achievements = db.get_number_of_achievements(current_task, self.user_id)
-        if not number_of_achievements:
-            notifications.cause_error("noAchievementsToPlot", self.current_language)
-            return None
-        # We write the name of the result that will be displayed in the graph
-        result_name, unit = db.get_task(current_task, self.user_id)
-        if unit == "number":
-            pass
-        elif unit == "time":
-            result_name = f"{result_name} (с)"
-        else:
-            unit_abbr = translations[self.current_language]["unit"][unit]
-            result_name = f"{result_name} ({unit_abbr})"
-        first_result = self.LE_first_result.text()
-        last_result = self.LE_last_result.text()
-        if self.is_table_row_number(first_result) and self.is_table_row_number(last_result):
-            first_result, last_result = sorted(map(int, (first_result, last_result)))
-            # Getting task results and dates on which they were completed
-            results = db.get_results(current_task, self.user_id, sort_by_date_desc=False)
-            dates = db.get_dates(current_task, self.user_id, sort_by_date_desc=False)
-            points = pd.Series(results, index=dates)[first_result - 1:last_result]
-            return Chart(
-                ex_main_window=self,
-                points=points,
-                task_name=current_task,
-                result_name=result_name,
-                translations=translations,
-            )
-        return None
+    def get_user_data_for_chart(self) -> None:
+        self.ex_user_data_for_chart = UserDataForChart(self, translations)
+        self.ex_user_data_for_chart.show()
+        self.ex_user_data_for_chart.user_data_received.connect(self.show_chart)
 
-    def show_chart(self) -> None:
+    def show_chart(self, data):
         """Demonstration of a graph of the results of the current sports task as a foto"""
-        self.ex_chart = self.get_ex_chart()
-        if self.ex_chart is None:  # For example, an exception occurred
-            return
+        self.ex_chart = Chart(self, data, translations)
         self.ex_chart.show_chart()
 
     def download_chart(self) -> None:
         """Exporting a graph of the results of the current sports task as a photo"""
-        self.ex_chart = self.get_ex_chart()
+        self.ex_chart = UserDataForChart(self, translations)
+        self.ex_chart.show()
+        data = self.ex_chart.get_user_data_for_chart()
+        print(data)
         if self.ex_chart is None:  # For example, an exception occurred
             return
         self.ex_chart.download_chart()
@@ -309,7 +284,10 @@ def get_system_language() -> str:
     (for most CIS countries - Russian, otherwise - English)
     P.S. The system language may change as languages are added to the application"""
     language, encoding = locale.getdefaultlocale()
-    cis_languages = ("ru_RU", "be_BE", "kk_KZ", "uk-UK", "az_AZ", "tk_TM", "ky_KG", "ro_MD", "uz_UZ", "hy_AM", "tg_TJ")
+    cis_languages = (
+        "ru_RU", "be_BE", "kk_KZ", "uk-UK", "az_AZ", "tk_TM",
+        "ky_KG", "ro_MD", "uz_UZ", "hy_AM", "tg_TJ",
+    )
     if language in cis_languages:
         return "Russian"
     return "English"

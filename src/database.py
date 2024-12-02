@@ -18,7 +18,7 @@ class Database:
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS Users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    login TEXT UNIQUE NOT NULL,
+                    authorization TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL
                 );
             """)
@@ -54,7 +54,7 @@ class Database:
                     FROM 
                       `Users` 
                     WHERE 
-                      `login` = ? 
+                      `authorization` = ? 
                       AND `password` = ?
                   );
             """
@@ -68,7 +68,7 @@ class Database:
             return result[0]
 
     def login_exists(self, login: str) -> bool:
-        """Checking if a login exists in the database"""
+        """Checking if a authorization exists in the database"""
         with self.connection:
             query = """
                 SELECT 
@@ -78,7 +78,7 @@ class Database:
                     FROM 
                       `Users` 
                     WHERE 
-                      `login` = ? 
+                      `authorization` = ? 
                   );
             """
             result = self.cursor.execute(query, (login,)).fetchone()
@@ -88,7 +88,7 @@ class Database:
         """Adding a user to the database"""
         with self.connection:
             query = """ 
-                INSERT INTO `Users` (`login`, `password`) 
+                INSERT INTO `Users` (`authorization`, `password`) 
                 VALUES 
                   (?, ?);
             """
@@ -103,7 +103,7 @@ class Database:
                 FROM 
                   `Users` 
                 WHERE 
-                  `login` = ?;
+                  `authorization` = ?;
             """
             result = self.cursor.execute(query, (login,)).fetchone()
             if result:
@@ -208,7 +208,8 @@ class Database:
             return [task_name[0] for task_name in result]
 
     def delete_task(self, task_name: str, user_id: int) -> None:
-        """Removing a user's task from the Tasks table and removing task achievements from the Achievements table"""
+        """Removing a user's task from the Tasks table and
+        removing task achievements from the Achievements table"""
         with self.connection:
             query1 = """
                 DELETE FROM 
@@ -273,97 +274,59 @@ class Database:
             self.cursor.execute(query, (date, task_id))
             self.connection.commit()
 
-    def get_achievements(
-        self, task_name: str, user_id: int, sort_by_date_desc=True,
-    ) -> list[tuple[datetime.date, int, int, str]]:
+    def get_achievements(self, task_name: str, user_id: int) -> list[tuple[datetime.date, int, int, str]]:
         """Getting all user achievements for a specific sports task"""
         with self.connection:
-            if sort_by_date_desc:
-                query = """
-                    SELECT
-                      date,
-                      result,
-                      mark,
-                      comment
-                    FROM 
-                      `Achievements`
-                    WHERE 
-                      `task_id` = ?
-                    ORDER BY date DESC;
-                """
-            else:
-                query = """
-                    SELECT
-                      date,
-                      result,
-                      mark,
-                      comment
-                    FROM 
-                      `Achievements`
-                    WHERE 
-                      `task_id` = ?
-                    ORDER BY date ASC;
-                """
+            query = """
+                SELECT
+                  date,
+                  result,
+                  mark,
+                  comment
+                FROM 
+                  `Achievements`
+                WHERE 
+                  `task_id` = ?
+                ORDER BY date DESC;
+            """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return list()
+                return []
             return self.cursor.execute(query, (task_id,)).fetchall()
 
-    def get_dates(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[datetime.date]:
+    def get_dates(self, task_name: str, user_id: int) -> list[datetime.date]:
         """Getting the dates of the results of a sports task"""
         with self.connection:
-            if sort_by_date_desc:
-                query = """
-                    SELECT
-                      date
-                    FROM
-                      `Achievements`
-                    WHERE
-                      `task_id` = ?
-                    ORDER BY date DESC;
-                """
-            else:
-                query = """
-                    SELECT
-                      date
-                    FROM
-                      `Achievements`
-                    WHERE
-                      `task_id` = ?
-                    ORDER BY date ASC;
-                """
+            query = """
+                SELECT
+                  date
+                FROM
+                  `Achievements`
+                WHERE
+                  `task_id` = ?
+                ORDER BY date DESC;
+            """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return list()
+                return []
             result: list[tuple[datetime.date]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [date[0] for date in result]
 
-    def get_results(self, task_name: str, user_id: int, sort_by_date_desc=True) -> list[int]:
+    def get_results(self, task_name: str, user_id: int) -> list[int]:
         """Getting of the results of a sports task"""
         with self.connection:
-            if sort_by_date_desc:
-                query = """
-                    SELECT
-                      result
-                    FROM
-                      `Achievements`
-                    WHERE
-                      `task_id` = ?
-                    ORDER BY date DESC;
-                """
-            else:
-                query = """
-                    SELECT
-                      result
-                    FROM
-                      `Achievements`
-                    WHERE
-                      `task_id` = ?
-                    ORDER BY date ASC;
-                """
+            query = """
+                SELECT
+                  result
+                FROM
+                  `Achievements`
+                WHERE
+                  `task_id` = ?
+                ORDER BY date DESC;
+            """
             task_id = self.get_task_id(task_name, user_id)
             if task_id is None:
-                return list()
+                return []
             results: list[tuple[int]] = self.cursor.execute(query, (task_id,)).fetchall()
             return [result[0] for result in results]
 

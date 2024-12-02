@@ -7,7 +7,7 @@ from src.database import db
 class Login(QMainWindow):
     def __init__(self, main_window, authorization, translations: dict, current_language: str):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/login.ui", self)
+        uic.loadUi(f"Design/{current_language}/authorization/authorization.ui", self)
         self.main_window = main_window
         self.authorization = authorization
         self.translations = translations
@@ -17,13 +17,13 @@ class Login(QMainWindow):
     def initUI(self) -> None:
         self.btn_login.clicked.connect(self.login_to_account)
         self.btn_back.clicked.connect(self.back)
-        self.CB_languages.currentTextChanged.connect(self.chage_language)
+        self.CB_languages.currentTextChanged.connect(self.change_language)
         self.lbl_wrong_name_or_password.hide()
 
-    def chage_language(self, language: str) -> None:
-        """Translation of login text from one language to another"""
+    def change_language(self, language: str) -> None:
+        """Translation of authorization text from one language to another"""
         self.current_language = language
-        uic.loadUi(f"Design/{language}/login.ui", self)
+        uic.loadUi(f"Design/{language}/authorization/authorization.ui", self)
         self.initUI()
 
     def login_to_account(self) -> None:
@@ -37,7 +37,7 @@ class Login(QMainWindow):
                 self.lbl_wrong_name_or_password.show()
 
     def back(self) -> None:
-        """Return from login to authorization"""
+        """Return from authorization to authorization"""
         self.close()
         self.ex_authorization = self.authorization(
             main_window=self.main_window,

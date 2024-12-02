@@ -9,13 +9,13 @@ from src.notifications import notifications
 
 
 class AddAchievementToTable(QDialog):
-    def __init__(self, ex_main_window, translations: dict, current_language: str):
+    def __init__(self, ex_main_window, translations: dict):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/adding_achievement.ui", self)
+        uic.loadUi(f"Design/{ex_main_window.current_language}/adding_achievement.ui", self)
         self.ex_main_window = ex_main_window
         self.user_id = self.ex_main_window.user_id
         self.translations = translations
-        self.current_language = current_language
+        self.current_language = ex_main_window.current_language
         self.initUI()
 
     def initUI(self) -> None:
@@ -34,14 +34,14 @@ class AddAchievementToTable(QDialog):
 
         # Processing Ok and Cancel buttons
 
-        self.adding_achievement_dialog_btns.accepted.connect(self.accept)
-        self.adding_achievement_dialog_btns.rejected.connect(self.cancel)
+        self.dialog_btns.accepted.connect(self.accept)
+        self.dialog_btns.rejected.connect(self.cancel)
 
         ok_button_text = self.translations[self.current_language]["btn"]["ok"]
         cancel_button_text = self.translations[self.current_language]["btn"]["cancel"]
 
-        self.adding_achievement_dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
-        self.adding_achievement_dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
+        self.dialog_btns.button(QDialogButtonBox.Ok).setText(ok_button_text)
+        self.dialog_btns.button(QDialogButtonBox.Cancel).setText(cancel_button_text)
 
     def get_date_of_achievement(self) -> datetime.date:
         """Getting the date on which the achievement was completed"""

@@ -7,7 +7,7 @@ from src.database import db
 class Registration(QMainWindow):
     def __init__(self, main_window, authorization, translations: dict, current_language: str):
         super().__init__()
-        uic.loadUi(f"Design/{current_language}/registration.ui", self)
+        uic.loadUi(f"Design/{current_language}/authorization/registration.ui", self)
         self.main_window = main_window
         self.authorization = authorization
         self.translations = translations
@@ -17,13 +17,13 @@ class Registration(QMainWindow):
     def initUI(self) -> None:
         self.btn_registration_and_login.clicked.connect(self.registration)
         self.btn_back.clicked.connect(self.back)
-        self.CB_languages.currentTextChanged.connect(self.chage_language)
+        self.CB_languages.currentTextChanged.connect(self.change_language)
         self.lbl_login_already_exists.hide()
 
-    def chage_language(self, language: str) -> None:
+    def change_language(self, language: str) -> None:
         """Translation of registration text from one language to another"""
         self.current_language = language
-        uic.loadUi(f"Design/{language}/registration.ui", self)
+        uic.loadUi(f"Design/{language}/authorization/registration.ui", self)
         self.initUI()
 
     def registration(self) -> None:

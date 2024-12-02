@@ -1,23 +1,25 @@
 import math
 
+import pandas as pd
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-from pandas.core.series import Series
 from PyQt5 import uic
 from PyQt5.QtWidgets import QFileDialog, QMainWindow
 
+from src.database import db
+
 
 class Chart(QMainWindow):
-    def __init__(self, ex_main_window, points: Series, task_name: str, result_name: str, translations: dict):
+    def __init__(self, ex_main_window, points: pd.Series, translations: dict):
         super().__init__()
-        self.current_language = ex_main_window.current_language
-        uic.loadUi(f"Design/{self.current_language}/chart.ui", self)
+        uic.loadUi(f"Design/{ex_main_window.current_language}/chart.ui", self)
         self.ex_main_window = ex_main_window
         self.points = points
-        self.task_name = task_name
-        self.result_name = result_name
         self.translations = translations
+        self.task_name = ex_main_window.CB_tasks.currentText()
+        self.current_language = ex_main_window.current_language
+        self.user_id = ex_main_window.user_id
         self.initUI()
 
     def initUI(self) -> None:
@@ -26,6 +28,16 @@ class Chart(QMainWindow):
 
         # Adding a chart to chartWidgetLayout
         self.chartWidgetLayout.addWidget(self.canvas)
+
+    def get_result_name_on_chart(self, task_name: str) -> str:
+        """Getting the name of the result that will be displayed in the graph"""
+        result_name, unit = db.get_task(task_name, self.user_id)
+        if unit == "number":
+            return result_name
+        if unit == "time":
+            return f"{result_name} (с)"
+        unit_abbr = self.translations[self.current_language]["unit"][unit]
+        return f"{result_name} ({unit_abbr})"
 
     def draw_chart(self) -> None:
         """Creating a chart and drawing it"""
@@ -38,8 +50,9 @@ class Chart(QMainWindow):
             linestyle="--",
             linewidth=2,
         )
+        result_name = self.get_result_name_on_chart(self.task_name)
         date_title = self.translations[self.current_language]["tableWidget"]["date"]
-        ax.set(xlabel=date_title, ylabel=self.result_name, title=self.task_name)
+        ax.set(xlabel=date_title, ylabel=result_name, title=self.task_name)
         ax.grid()
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%d.%m.%y"))
         plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=math.ceil(len(self.points) / 10)))
@@ -67,3 +80,5 @@ class Chart(QMainWindow):
             plt.savefig(f"{file_path}.jpeg", bbox_inches="tight")
         elif file_type == ".png":
             plt.savefig(f"{file_path}.png", bbox_inches="tight")
+
+
